@@ -531,25 +531,6 @@ html[data-theme="light"] .icon-sun { display: none; }
   text-transform: uppercase;
   color: var(--text-faint);
 }
-.active-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 6px;
-}
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--sand-soft);
-  color: var(--sand);
-  font-size: 0.72rem;
-  font-weight: 600;
-  border: 0;
-}
-.filter-chip:hover { filter: brightness(1.1); }
 
 .feed-status {
   margin: 6px 0;

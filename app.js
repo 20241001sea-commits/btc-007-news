@@ -375,7 +375,7 @@
       btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === state.lang ? "true" : "false");
     });
     renderChannels();
-    renderActiveFilters();
+    updateFeedHeading();
     renderFeed();
     renderMarketBits({ force: true });
     if (state.view === "markets") renderMarketsView();
@@ -833,18 +833,13 @@
     }).join("");
   }
 
-  function renderActiveFilters() {
-    const box = $("active-filters");
-    const chips = [];
-    if (state.coin) chips.push(`<button type="button" class="filter-chip" data-clear="coin">${esc(t("filter_coin", { s: state.coin }))} ×</button>`);
-    if (state.query) chips.push(`<button type="button" class="filter-chip" data-clear="q">${esc(state.query)} ×</button>`);
-    if (!chips.length) {
-      box.hidden = true;
-      box.innerHTML = "";
-      return;
-    }
-    box.hidden = false;
-    box.innerHTML = chips.join("") + `<button type="button" class="filter-chip" data-clear="all">${esc(t("clear_filters"))}</button>`;
+  function updateFeedHeading() {
+    const el = $("feed-heading");
+    if (!el) return;
+    if (state.query) el.textContent = t("search") + " · " + state.query;
+    else if (state.coin) el.textContent = t("filter_stories", { s: state.coin });
+    else if (state.channel && state.channel !== "all") el.textContent = channelLabel(state.channel);
+    else el.textContent = t("feed_title");
   }
 
   function digestPoints(item) {
@@ -1975,17 +1970,31 @@
 
   function setChannel(ch, push = true) {
     state.channel = ch || "all";
+    state.coin = "";
+    state.query = "";
+    $("search-input").value = "";
+    $("search-clear").hidden = true;
+    if (state.view !== "feed") goFeed(false);
     if (push) syncUrl();
     renderChannels();
+    renderTrending();
+    updateFeedHeading();
     resetFeed();
   }
 
   function setCoin(sym, push = true) {
     state.coin = sym || "";
+    if (state.coin) {
+      state.channel = "all";
+      state.query = "";
+      $("search-input").value = "";
+      $("search-clear").hidden = true;
+    }
     if (state.view !== "feed") goFeed(false);
     if (push) syncUrl();
-    renderActiveFilters();
+    renderChannels();
     renderTrending();
+    updateFeedHeading();
     resetFeed();
   }
 
@@ -1993,8 +2002,15 @@
     state.query = (q || "").trim();
     $("search-input").value = state.query;
     $("search-clear").hidden = !state.query;
+    if (state.query) {
+      state.channel = "all";
+      state.coin = "";
+    }
+    if (state.view !== "feed") goFeed(false);
     if (push) syncUrl();
-    renderActiveFilters();
+    renderChannels();
+    renderTrending();
+    updateFeedHeading();
     resetFeed();
   }
 
@@ -2025,17 +2041,11 @@
       }, 400);
     });
     $("search-clear").addEventListener("click", () => setQuery(""));
-    $("active-filters").addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-clear]");
-      if (!btn) return;
-      const which = btn.getAttribute("data-clear");
-      if (which === "coin") setCoin("");
-      else if (which === "q") setQuery("");
-      else { state.coin = ""; setQuery(""); }
-    });
     $("feed").addEventListener("click", (e) => {
       const coin = e.target.closest("[data-coin]");
       if (coin) { e.preventDefault(); e.stopPropagation(); setCoin(coin.getAttribute("data-coin")); return; }
+      const ch = e.target.closest("[data-ch]");
+      if (ch) { e.preventDefault(); e.stopPropagation(); setChannel(ch.getAttribute("data-ch")); return; }
       const story = e.target.closest(".story[data-id]");
       if (story) openArticle(story.getAttribute("data-id"));
     });
@@ -2090,7 +2100,7 @@
       $("search-clear").hidden = true;
       goFeed(true);
       renderChannels();
-      renderActiveFilters();
+      updateFeedHeading();
       resetFeed();
     });
     const onFeedScroll = () => {
@@ -2179,7 +2189,7 @@
     $("search-input").value = state.query;
     $("search-clear").hidden = !state.query;
     renderChannels();
-    renderActiveFilters();
+    updateFeedHeading();
     if (u.id) openArticle(u.id, false);
     else if (u.view === "markets") goMarkets(false);
     else goFeed(false);
@@ -2223,7 +2233,7 @@
     $("search-input").value = state.query;
     $("search-clear").hidden = !state.query;
     renderChannels();
-    renderActiveFilters();
+    updateFeedHeading();
     if (u.id) openArticle(u.id, false);
     else if (u.view === "markets") goMarkets(false);
     else goFeed(false);
