@@ -1,4 +1,4 @@
-/* Bitxsea News — original fullscreen live board. Not derived from eqn.news. */
+/* BTC-007 News — original fullscreen live board. Not derived from eqn.news. */
 
 :root {
   color-scheme: dark;
@@ -1373,7 +1373,7 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
 /* Ensure the hidden attribute always wins over display utilities */
 [hidden] { display: none !important; }
 
-/* Coin detail drawer — original Bitxsea panel
+/* Coin detail drawer — original BTC-007 News panel
    ------------------------------------------------------------------ */
 .coin-drawer {
   position: fixed;

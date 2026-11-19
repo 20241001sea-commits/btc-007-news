@@ -1,4 +1,4 @@
-# Bitxsea News
+# BTC-007 News
 
 Live site: https://polite-lotus-yhf8.here.now/
 

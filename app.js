@@ -375,7 +375,7 @@
     });
     if (isMarkets) renderMarketsView();
     measureChrome();
-    if (!isArticle) document.title = "Bitxsea News";
+    if (!isArticle) document.title = "BTC-007 News";
   }
 
   function readUrl() {
@@ -1767,7 +1767,7 @@
     const note = it.data && it.data.note ? String(it.data.note) : "";
     const body = it.body ? String(it.body) : "";
     const ch = (it.channels || [])[0] || "";
-    document.title = title ? `${title} · Bitxsea News` : "Bitxsea News";
+    document.title = title ? `${title} · BTC-007 News` : "BTC-007 News";
     const related = (data.related && Array.isArray(data.related.items)) ? data.related.items : [];
     const latest = Array.isArray(data.channel_latest) ? data.channel_latest : [];
     const prevId = data.prev_id;

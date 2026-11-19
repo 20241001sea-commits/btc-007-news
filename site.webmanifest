@@ -1,6 +1,6 @@
 {
-  "name": "Bitxsea News",
-  "short_name": "Bitxsea",
+  "name": "BTC-007 News",
+  "short_name": "BTC-007",
   "description": "Live market briefings / 实时快讯与行情",
   "start_url": "./",
   "display": "standalone",

@@ -1,4 +1,4 @@
-/* Bitxsea News chrome strings — original, not copied from eqn.news */
+/* BTC-007 News chrome strings — original, not copied from eqn.news */
 window.BITXSEA_I18N = {
   en: {
     skip: "Skip to stories",
@@ -97,7 +97,7 @@ window.BITXSEA_I18N = {
     not_found: "This story could not be found.",
     hk: "HK",
     disclaimer: "Content is automatically collected and translated, and is not investment advice.",
-    attribution: "Headlines and market data come from the Equation News public API. The interface is independently designed by Bitxsea News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API documentation</a>"
+    attribution: "Headlines and market data come from the Equation News public API. The interface is independently designed by BTC-007 News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API documentation</a>"
   },
   zh: {
     skip: "跳到快讯列表",
@@ -196,7 +196,7 @@ window.BITXSEA_I18N = {
     not_found: "找不到这条快讯。",
     hk: "香港",
     disclaimer: "内容由系统自动采集与翻译，不构成投资建议。",
-    attribution: "快讯与行情数据来自 Equation News 公开接口，界面由 Bitxsea News 独立设计。<a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">接口说明</a>"
+    attribution: "快讯与行情数据来自 Equation News 公开接口，界面由 BTC-007 News 独立设计。<a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">接口说明</a>"
   }
 };
 
@@ -297,7 +297,7 @@ window.BITXSEA_I18N.ko = {
   not_found: "해당 소식을 찾을 수 없습니다.",
   hk: "홍콩",
   disclaimer: "콘텐츠는 자동으로 수집·번역되며 투자 조언이 아닙니다.",
-  attribution: "헤드라인과 시세 데이터는 Equation News 공개 API에서 가져오며, 인터페이스는 Bitxsea News가 독자적으로 설계했습니다. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API 문서</a>"
+  attribution: "헤드라인과 시세 데이터는 Equation News 공개 API에서 가져오며, 인터페이스는 BTC-007 News가 독자적으로 설계했습니다. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API 문서</a>"
 };
 
 window.BITXSEA_I18N.tr = {
@@ -397,7 +397,7 @@ window.BITXSEA_I18N.tr = {
   not_found: "Bu haber bulunamadı.",
   hk: "HK",
   disclaimer: "İçerik otomatik olarak toplanır ve çevrilir; yatırım tavsiyesi değildir.",
-  attribution: "Manşetler ve piyasa verileri Equation News herkese açık API’sinden gelir. Arayüz Bitxsea News tarafından bağımsız olarak tasarlanmıştır. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API belgeleri</a>"
+  attribution: "Manşetler ve piyasa verileri Equation News herkese açık API’sinden gelir. Arayüz BTC-007 News tarafından bağımsız olarak tasarlanmıştır. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API belgeleri</a>"
 };
 
 window.BITXSEA_I18N.ru = {
@@ -497,7 +497,7 @@ window.BITXSEA_I18N.ru = {
   not_found: "Материал не найден.",
   hk: "HK",
   disclaimer: "Материалы собираются и переводятся автоматически и не являются инвестиционной рекомендацией.",
-  attribution: "Заголовки и рыночные данные поступают из открытого API Equation News. Интерфейс независимо разработан Bitxsea News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">Документация API</a>"
+  attribution: "Заголовки и рыночные данные поступают из открытого API Equation News. Интерфейс независимо разработан BTC-007 News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">Документация API</a>"
 };
 
 window.BITXSEA_CHANNELS = [
