@@ -1,0 +1,14 @@
+{
+  "proxies": {
+    "/api/eqn/news": {
+      "upstream": "https://eqn.news/api/v1/news",
+      "method": "GET",
+      "rateLimit": "7200/hour/ip"
+    },
+    "/api/eqn/news/*": {
+      "upstream": "https://eqn.news/api/v1/news/",
+      "method": "GET",
+      "rateLimit": "7200/hour/ip"
+    }
+  }
+}
