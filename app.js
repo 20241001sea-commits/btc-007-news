@@ -28,6 +28,8 @@
   const state = {
     lang: "zh",
     theme: "dark",
+    timeZone: null,
+    timeZoneSource: "browser",
     view: "feed",
     channel: "all",
     coin: "",
@@ -204,16 +206,41 @@
     return Number(n) > 0 ? "pct-up" : "pct-down";
   }
 
-  function localZoneLabel(date = new Date()) {
+  function browserTimeZone() {
     try {
-      const parts = new Intl.DateTimeFormat(locale(), { timeZoneName: "shortOffset" }).formatToParts(date);
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch {
+      return "UTC";
+    }
+  }
+
+  function validTimeZone(tz) {
+    if (!tz || typeof tz !== "string") return "";
+    try {
+      new Intl.DateTimeFormat("en", { timeZone: tz }).format(new Date());
+      return tz;
+    } catch {
+      return "";
+    }
+  }
+
+  function viewerTimeZone() {
+    return validTimeZone(state.timeZone) || browserTimeZone();
+  }
+
+  function zoneLabel(date = new Date(), style = "short") {
+    try {
+      const parts = new Intl.DateTimeFormat(locale(), {
+        timeZone: viewerTimeZone(),
+        timeZoneName: style
+      }).formatToParts(date);
       return (parts.find((p) => p.type === "timeZoneName") || {}).value || "";
     } catch {
       return "";
     }
   }
 
-  function formatClock(ts, timeZone) {
+  function formatClock(ts, timeZone = viewerTimeZone()) {
     return new Intl.DateTimeFormat(locale(), {
       timeZone,
       hour: "2-digit",
@@ -225,12 +252,62 @@
 
   function formatCardTime(ts) {
     const d = new Date(ts);
+    const tz = viewerTimeZone();
     const time = new Intl.DateTimeFormat(locale(), {
+      timeZone: tz,
       hour: "2-digit",
       minute: "2-digit",
       hourCycle: "h23"
     }).format(d);
-    return { time, zone: localZoneLabel(d), date: d };
+    return { time, zone: zoneLabel(d, "shortOffset"), date: d };
+  }
+
+  function zonedDayKey(ts) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: viewerTimeZone(),
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(new Date(ts));
+    const get = (type) => (parts.find((p) => p.type === type) || {}).value || "";
+    return `${get("year")}-${get("month")}-${get("day")}`;
+  }
+
+  function applyViewerTimeZone(tz, source) {
+    const next = validTimeZone(tz) || browserTimeZone();
+    const changed = next !== state.timeZone;
+    state.timeZone = next;
+    state.timeZoneSource = source || state.timeZoneSource || "browser";
+    updateClock();
+    if (!changed) return;
+    if (state.order.length) renderFeed();
+    if (state.view === "article" && state.articleCache) renderArticle(state.articleCache);
+    if (state.coinDrawer) {
+      const rec = state.market.bySym.get(state.coinDrawer);
+      if (rec) renderCoinDetail(rec, relatedNewsFor(rec.s));
+    }
+  }
+
+  async function detectViewerTimeZone() {
+    const pick = async (url, read) => {
+      const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+      if (!res.ok) throw new Error("tz");
+      const tz = read(await res.json());
+      const ok = validTimeZone(tz);
+      if (!ok) throw new Error("tz");
+      return ok;
+    };
+    try {
+      const tz = await Promise.any([
+        pick("https://ipwho.is/?fields=success,timezone", (j) => (
+          j && j.success !== false && j.timezone && (j.timezone.id || j.timezone)
+        )),
+        pick("https://ipapi.co/json/", (j) => j && j.timezone)
+      ]);
+      applyViewerTimeZone(tz, "ip");
+    } catch {
+      applyViewerTimeZone(browserTimeZone(), "browser");
+    }
   }
 
   function relativeTime(ts) {
@@ -242,20 +319,26 @@
   }
 
   function localDayKey(ts) {
-    const d = new Date(ts);
-    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    return zonedDayKey(ts);
   }
 
   function dayLabel(ts, count) {
-    const d = new Date(ts);
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const that = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const diffDays = Math.round((today - that) / 86400000);
+    const todayKey = zonedDayKey(Date.now());
+    const thatKey = zonedDayKey(ts);
+    const [y1, m1, d1] = todayKey.split("-").map(Number);
+    const [y2, m2, d2] = thatKey.split("-").map(Number);
+    const diffDays = Math.round((Date.UTC(y1, m1 - 1, d1) - Date.UTC(y2, m2 - 1, d2)) / 86400000);
     let label;
     if (diffDays === 0) label = t("today");
     else if (diffDays === 1) label = t("yesterday");
-    else label = new Intl.DateTimeFormat(locale(), { weekday: "long", month: "short", day: "numeric" }).format(d);
+    else {
+      label = new Intl.DateTimeFormat(locale(), {
+        timeZone: viewerTimeZone(),
+        weekday: "long",
+        month: "short",
+        day: "numeric"
+      }).format(new Date(ts));
+    }
     return `${label} · ${count}`;
   }
 
@@ -291,8 +374,6 @@
     document.querySelectorAll(".lang-btn").forEach((btn) => {
       btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === state.lang ? "true" : "false");
     });
-    const hk = $("hk-clock");
-    if (hk) hk.querySelector(".hk-label").textContent = t("hk");
     renderChannels();
     renderActiveFilters();
     renderFeed();
@@ -336,10 +417,16 @@
 
   function updateClock() {
     const now = new Date();
+    const tz = viewerTimeZone();
     const el = $("hk-time");
-    if (el) el.textContent = formatClock(now, HK_TZ);
+    if (el) el.textContent = formatClock(now, tz);
     const wrap = $("hk-clock");
-    if (wrap) wrap.setAttribute("datetime", now.toISOString());
+    if (wrap) {
+      wrap.setAttribute("datetime", now.toISOString());
+      wrap.setAttribute("title", tz);
+    }
+    const lab = wrap && wrap.querySelector(".hk-label");
+    if (lab) lab.textContent = zoneLabel(now, "short") || tz.split("/").pop().replaceAll("_", " ");
   }
 
   function liveStateName() {
@@ -1755,6 +1842,7 @@
     const ts = Number(it.published_ts) || 0;
     const { date } = formatCardTime(ts);
     const full = new Intl.DateTimeFormat(locale(), {
+      timeZone: viewerTimeZone(),
       year: "numeric", month: "short", day: "numeric",
       hour: "2-digit", minute: "2-digit", hourCycle: "h23",
       timeZoneName: "shortOffset"
@@ -2117,7 +2205,10 @@
     applyTheme(detectTheme(), false);
     loadMatrixPrefs();
     state.lang = detectLang();
+    state.timeZone = browserTimeZone();
+    state.timeZoneSource = "browser";
     applyLang(state.lang, true);
+    detectViewerTimeZone();
     bindEvents();
     observeMatrix($("rail-matrix"), () => layoutMatrix($("rail-matrix"), { top: 30, compact: true }));
     observeMatrix($("markets-matrix"), () => {
