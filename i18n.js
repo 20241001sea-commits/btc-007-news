@@ -96,6 +96,9 @@ window.BITXSEA_I18N = {
     detail_updated: "Updated {t}",
     not_found: "This story could not be found.",
     hk: "HK",
+    ad_badge: "Ad",
+    ad_cta: "Trade memes on GMGN",
+    ad_aria: "Sponsored: trade memes on GMGN",
     disclaimer: "Content is automatically collected and translated, and is not investment advice.",
     attribution: "Headlines and market data come from the Equation News public API. The interface is independently designed by BTC-007 News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API documentation</a>"
   },
@@ -195,6 +198,9 @@ window.BITXSEA_I18N = {
     detail_updated: "更新于 {t}",
     not_found: "找不到这条快讯。",
     hk: "香港",
+    ad_badge: "广告",
+    ad_cta: "在 GMGN 交易 meme 币",
+    ad_aria: "推广：在 GMGN 交易 meme 币",
     disclaimer: "内容由系统自动采集与翻译，不构成投资建议。",
     attribution: "快讯与行情数据来自 Equation News 公开接口，界面由 BTC-007 News 独立设计。<a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">接口说明</a>"
   }
@@ -296,6 +302,9 @@ window.BITXSEA_I18N.ko = {
     detail_updated: "업데이트 {t}",
   not_found: "해당 소식을 찾을 수 없습니다.",
   hk: "홍콩",
+  ad_badge: "광고",
+  ad_cta: "GMGN에서 밈 코인 거래",
+  ad_aria: "광고: GMGN에서 밈 코인 거래",
   disclaimer: "콘텐츠는 자동으로 수집·번역되며 투자 조언이 아닙니다.",
   attribution: "헤드라인과 시세 데이터는 Equation News 공개 API에서 가져오며, 인터페이스는 BTC-007 News가 독자적으로 설계했습니다. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API 문서</a>"
 };
@@ -396,6 +405,9 @@ window.BITXSEA_I18N.tr = {
     detail_updated: "Güncelleme {t}",
   not_found: "Bu haber bulunamadı.",
   hk: "HK",
+  ad_badge: "Reklam",
+  ad_cta: "GMGN’de meme coin al-sat",
+  ad_aria: "Sponsorlu: GMGN’de meme coin al-sat",
   disclaimer: "İçerik otomatik olarak toplanır ve çevrilir; yatırım tavsiyesi değildir.",
   attribution: "Manşetler ve piyasa verileri Equation News herkese açık API’sinden gelir. Arayüz BTC-007 News tarafından bağımsız olarak tasarlanmıştır. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API belgeleri</a>"
 };
@@ -496,6 +508,9 @@ window.BITXSEA_I18N.ru = {
     detail_updated: "Обновлено {t}",
   not_found: "Материал не найден.",
   hk: "HK",
+  ad_badge: "Реклама",
+  ad_cta: "Торгуйте мем-коинами на GMGN",
+  ad_aria: "Реклама: торгуйте мем-коинами на GMGN",
   disclaimer: "Материалы собираются и переводятся автоматически и не являются инвестиционной рекомендацией.",
   attribution: "Заголовки и рыночные данные поступают из открытого API Equation News. Интерфейс независимо разработан BTC-007 News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">Документация API</a>"
 };
