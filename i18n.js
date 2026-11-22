@@ -99,6 +99,8 @@ window.BITXSEA_I18N = {
     ad_badge: "Ad",
     ad_cta: "Trade memes on GMGN",
     ad_aria: "Sponsored: trade memes on GMGN",
+    ad2_cta: "Full-power Claude API — stable, reliable, ready to use",
+    ad2_aria: "Sponsored: full-power Claude API — stable, reliable, ready to use",
     disclaimer: "Content is automatically collected and translated, and is not investment advice.",
     attribution: "Headlines and market data come from the Equation News public API. The interface is independently designed by BTC-007 News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API documentation</a>"
   },
@@ -201,6 +203,8 @@ window.BITXSEA_I18N = {
     ad_badge: "广告",
     ad_cta: "在 GMGN 交易 meme 币",
     ad_aria: "推广：在 GMGN 交易 meme 币",
+    ad2_cta: "满血 Claude API 稳定可靠，即开即用",
+    ad2_aria: "推广：满血 Claude API 稳定可靠，即开即用",
     disclaimer: "内容由系统自动采集与翻译，不构成投资建议。",
     attribution: "快讯与行情数据来自 Equation News 公开接口，界面由 BTC-007 News 独立设计。<a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">接口说明</a>"
   }
@@ -305,6 +309,8 @@ window.BITXSEA_I18N.ko = {
   ad_badge: "광고",
   ad_cta: "GMGN에서 밈 코인 거래",
   ad_aria: "광고: GMGN에서 밈 코인 거래",
+  ad2_cta: "풀파워 Claude API, 안정적이고 바로 사용 가능",
+  ad2_aria: "광고: 풀파워 Claude API, 안정적이고 바로 사용 가능",
   disclaimer: "콘텐츠는 자동으로 수집·번역되며 투자 조언이 아닙니다.",
   attribution: "헤드라인과 시세 데이터는 Equation News 공개 API에서 가져오며, 인터페이스는 BTC-007 News가 독자적으로 설계했습니다. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API 문서</a>"
 };
@@ -408,6 +414,8 @@ window.BITXSEA_I18N.tr = {
   ad_badge: "Reklam",
   ad_cta: "GMGN’de meme coin al-sat",
   ad_aria: "Sponsorlu: GMGN’de meme coin al-sat",
+  ad2_cta: "Tam güç Claude API — kararlı, güvenilir, hemen kullanıma hazır",
+  ad2_aria: "Sponsorlu: Tam güç Claude API — kararlı, güvenilir, hemen kullanıma hazır",
   disclaimer: "İçerik otomatik olarak toplanır ve çevrilir; yatırım tavsiyesi değildir.",
   attribution: "Manşetler ve piyasa verileri Equation News herkese açık API’sinden gelir. Arayüz BTC-007 News tarafından bağımsız olarak tasarlanmıştır. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">API belgeleri</a>"
 };
@@ -511,6 +519,8 @@ window.BITXSEA_I18N.ru = {
   ad_badge: "Реклама",
   ad_cta: "Торгуйте мем-коинами на GMGN",
   ad_aria: "Реклама: торгуйте мем-коинами на GMGN",
+  ad2_cta: "Полноценный Claude API — стабильный, надёжный, сразу к работе",
+  ad2_aria: "Реклама: полноценный Claude API — стабильный, надёжный, сразу к работе",
   disclaimer: "Материалы собираются и переводятся автоматически и не являются инвестиционной рекомендацией.",
   attribution: "Заголовки и рыночные данные поступают из открытого API Equation News. Интерфейс независимо разработан BTC-007 News. <a href=\"https://eqn.news/api-docs\" target=\"_blank\" rel=\"noopener noreferrer\">Документация API</a>"
 };

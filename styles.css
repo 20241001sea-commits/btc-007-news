@@ -538,6 +538,9 @@ html[data-theme="light"] .icon-sun { display: none; }
 }
 .sponsor-unit:hover { color: inherit; background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .sponsor-unit:focus-visible { box-shadow: var(--focus); }
+.sponsor-unit + .sponsor-unit {
+  border-top: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+}
 
 .sponsor-badge {
   flex: none;
