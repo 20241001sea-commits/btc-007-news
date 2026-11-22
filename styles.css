@@ -507,6 +507,11 @@ html[data-theme="light"] .icon-sun { display: none; }
   flex: none;
   z-index: 28;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  overflow: hidden;
   border-bottom: 1px solid var(--line);
   background:
     linear-gradient(90deg,
@@ -528,18 +533,22 @@ html[data-theme="light"] .icon-sun { display: none; }
 .sponsor-unit {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
   min-height: 40px;
-  padding: 6px var(--safe-r) 6px var(--safe-l);
+  padding: 4px 10px;
   text-decoration: none;
   color: inherit;
   transition: background 0.18s ease;
 }
+.sponsor-unit:first-child { padding-left: var(--safe-l); }
+.sponsor-unit:last-child { padding-right: var(--safe-r); }
 .sponsor-unit:hover { color: inherit; background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .sponsor-unit:focus-visible { box-shadow: var(--focus); }
 .sponsor-unit + .sponsor-unit {
-  border-top: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
 }
 
 .sponsor-badge {
@@ -603,8 +612,11 @@ html[data-theme="light"] .sponsor-brand {
 }
 
 @media (max-width: 767px) {
-  .sponsor-unit { min-height: 44px; gap: 8px; }
-  .sponsor-cta { font-size: 0.78rem; }
+  .sponsor-unit { min-height: 44px; gap: 6px; padding-top: 4px; padding-bottom: 4px; }
+  .sponsor-cta { font-size: 0.72rem; }
+  .sponsor-brand { font-size: 0.84rem; }
+  .sponsor-go { width: 22px; height: 22px; }
+  .sponsor-go svg { width: 14px; height: 14px; }
 }
 
 /* Board: remaining viewport is feed + rail
@@ -1457,8 +1469,12 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
 @media (max-width: 420px) {
   .hk-label { display: none; }
   .live-label { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sponsor-unit { gap: 7px; }
-  .sponsor-brand { font-size: 0.86rem; }
+  .sponsor-unit { gap: 5px; }
+  .sponsor-brand { font-size: 0.76rem; letter-spacing: 0.03em; }
+  .sponsor-cta { font-size: 0.66rem; }
+  .sponsor-badge { height: 16px; padding: 0 5px; font-size: 0.56rem; letter-spacing: 0.04em; }
+  .sponsor-go { width: 20px; height: 20px; }
+  .sponsor-go svg { width: 13px; height: 13px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
