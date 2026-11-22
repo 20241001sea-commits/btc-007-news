@@ -567,6 +567,13 @@ html[data-theme="light"] .icon-sun { display: none; }
   border: 1px solid color-mix(in srgb, var(--sand) 30%, var(--line));
 }
 
+.sponsor-logo {
+  flex: none;
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
 .sponsor-brand {
   flex: none;
   font-family: var(--font-display);
@@ -615,6 +622,7 @@ html[data-theme="light"] .sponsor-brand {
   .sponsor-unit { min-height: 44px; gap: 6px; padding-top: 4px; padding-bottom: 4px; }
   .sponsor-cta { font-size: 0.72rem; }
   .sponsor-brand { font-size: 0.84rem; }
+  .sponsor-logo { width: 22px; height: 22px; }
   .sponsor-go { width: 22px; height: 22px; }
   .sponsor-go svg { width: 14px; height: 14px; }
 }
@@ -1470,6 +1478,7 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
   .hk-label { display: none; }
   .live-label { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sponsor-unit { gap: 5px; }
+  .sponsor-logo { width: 20px; height: 20px; }
   .sponsor-brand { font-size: 0.76rem; letter-spacing: 0.03em; }
   .sponsor-cta { font-size: 0.66rem; }
   .sponsor-badge { height: 16px; padding: 0 5px; font-size: 0.56rem; letter-spacing: 0.04em; }
