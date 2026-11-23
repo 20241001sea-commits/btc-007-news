@@ -532,7 +532,9 @@ html[data-theme="light"] .icon-sun { display: none; }
   border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
 }
 
-/* Sponsored strip — compact, always visible, original chrome
+/* Sponsored strip — compact, always visible, original chrome.
+   Fluid type + wrapping so every badge, wordmark, and CTA stays fully
+   visible on phones and tablets. Never hide or ellipsize ad copy.
    ------------------------------------------------------------------ */
 .sponsor-strip {
   flex: none;
@@ -562,14 +564,19 @@ html[data-theme="light"] .icon-sun { display: none; }
 }
 
 .sponsor-unit {
+  container-type: inline-size;
+  container-name: ad;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
+  align-content: center;
+  column-gap: clamp(3px, 0.7vw, 8px);
+  row-gap: clamp(1px, 0.35vw, 3px);
   flex: 1 1 0;
   min-width: 0;
   width: auto;
-  min-height: 40px;
-  padding: 4px 8px;
+  min-height: clamp(40px, 6.2vh, 44px);
+  padding: clamp(3px, 0.55vw, 5px) clamp(4px, 0.85vw, 8px);
   text-decoration: none;
   color: inherit;
   transition: background 0.18s ease;
@@ -586,13 +593,16 @@ html[data-theme="light"] .icon-sun { display: none; }
   flex: none;
   display: inline-flex;
   align-items: center;
-  height: 18px;
-  padding: 0 7px;
+  height: auto;
+  min-height: clamp(14px, 2.6vw + 0.4vh, 18px);
+  padding: 1px clamp(3px, 0.55vw, 7px);
   border-radius: 999px;
-  font-size: 0.62rem;
+  font-size: clamp(0.48rem, 0.30rem + 0.58vw, 0.62rem);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: clamp(0.01em, 0.12vw, 0.08em);
+  line-height: 1.15;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--sand);
   background: var(--sand-soft);
   border: 1px solid color-mix(in srgb, var(--sand) 30%, var(--line));
@@ -601,21 +611,18 @@ html[data-theme="light"] .icon-sun { display: none; }
 .sponsor-logo {
   flex: none;
   display: block;
-  width: 24px;
-  height: 24px;
+  width: clamp(14px, 2.8vw + 0.3vh, 24px);
+  height: clamp(14px, 2.8vw + 0.3vh, 24px);
   object-fit: contain;
 }
 .sponsor-brand {
   flex: none;
-  max-width: 8.5em;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.92rem;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-size: clamp(0.64rem, 0.42rem + 0.72vw, 0.92rem);
+  letter-spacing: clamp(0, 0.08vw, 0.04em);
+  line-height: 1.15;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   background: linear-gradient(180deg, var(--text), color-mix(in srgb, var(--accent) 55%, var(--text)));
   -webkit-background-clip: text;
   background-clip: text;
@@ -623,28 +630,34 @@ html[data-theme="light"] .icon-sun { display: none; }
 }
 
 .sponsor-cta {
-  flex: 1 1 auto;
+  flex: 1 1 7.5rem;
   min-width: 0;
-  font-size: 0.8rem;
+  font-size: clamp(0.58rem, 0.38rem + 0.58vw, 0.8rem);
   font-weight: 600;
+  letter-spacing: clamp(-0.02em, 0.04vw, 0);
+  line-height: 1.25;
   color: var(--text-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-wrap: pretty;
 }
 
 .sponsor-go {
   flex: none;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: clamp(16px, 3vw + 0.3vh, 26px);
+  height: clamp(16px, 3vw + 0.3vh, 26px);
   border-radius: 50%;
   color: var(--accent);
   background: var(--accent-soft);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 22%, transparent);
 }
-.sponsor-go svg { display: block; }
+.sponsor-go svg {
+  display: block;
+  width: clamp(10px, 1.8vw + 0.2vh, 16px);
+  height: clamp(10px, 1.8vw + 0.2vh, 16px);
+}
 
 html[data-theme="light"] .sponsor-brand {
   background: none;
@@ -653,13 +666,22 @@ html[data-theme="light"] .sponsor-brand {
   background-clip: initial;
 }
 
-@media (max-width: 767px) {
-  .sponsor-unit { min-height: 44px; gap: 5px; padding: 4px 6px; }
-  .sponsor-cta { display: none; }
-  .sponsor-brand { font-size: 0.84rem; }
-  .sponsor-logo { width: 22px; height: 22px; }
-  .sponsor-go { width: 22px; height: 22px; }
-  .sponsor-go svg { width: 14px; height: 14px; }
+/* Narrow slot (phones / 3-up tablets): stack wordmark + full CTA under the badge row. */
+@container ad (max-width: 280px) {
+  .sponsor-logo { order: 1; }
+  .sponsor-badge { order: 2; }
+  .sponsor-go { order: 3; margin-left: auto; }
+  .sponsor-brand { order: 4; flex: 1 1 100%; }
+  .sponsor-cta { order: 5; flex: 1 1 100%; }
+}
+
+@media (pointer: coarse) {
+  .sponsor-unit { min-height: 44px; }
+}
+
+@media (max-height: 500px) {
+  .sponsor-unit { row-gap: 1px; padding-top: 2px; padding-bottom: 2px; }
+  .sponsor-cta { line-height: 1.18; }
 }
 
 /* Board: remaining viewport is feed + rail
@@ -1534,11 +1556,6 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
 @media (max-width: 420px) {
   .hk-label { display: none; }
   .live-label { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sponsor-unit { gap: 4px; padding-left: 5px; padding-right: 5px; }
-  .sponsor-logo { width: 20px; height: 20px; }
-  .sponsor-brand { font-size: 0.76rem; letter-spacing: 0.03em; }
-  .sponsor-badge { height: 16px; padding: 0 5px; font-size: 0.56rem; letter-spacing: 0.04em; }
-  .sponsor-go { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
