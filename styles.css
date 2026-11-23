@@ -564,12 +564,12 @@ html[data-theme="light"] .icon-sun { display: none; }
 .sponsor-unit {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex: 1 1 0;
   min-width: 0;
   width: auto;
   min-height: 40px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   text-decoration: none;
   color: inherit;
   transition: background 0.18s ease;
@@ -650,8 +650,8 @@ html[data-theme="light"] .sponsor-brand {
 }
 
 @media (max-width: 767px) {
-  .sponsor-unit { min-height: 44px; gap: 6px; padding-top: 4px; padding-bottom: 4px; }
-  .sponsor-cta { font-size: 0.72rem; }
+  .sponsor-unit { min-height: 44px; gap: 5px; padding: 4px 6px; }
+  .sponsor-cta { display: none; }
   .sponsor-brand { font-size: 0.84rem; }
   .sponsor-logo { width: 22px; height: 22px; }
   .sponsor-go { width: 22px; height: 22px; }
@@ -1530,13 +1530,11 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
 @media (max-width: 420px) {
   .hk-label { display: none; }
   .live-label { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .sponsor-unit { gap: 5px; }
+  .sponsor-unit { gap: 4px; padding-left: 5px; padding-right: 5px; }
   .sponsor-logo { width: 20px; height: 20px; }
   .sponsor-brand { font-size: 0.76rem; letter-spacing: 0.03em; }
-  .sponsor-cta { font-size: 0.66rem; }
   .sponsor-badge { height: 16px; padding: 0 5px; font-size: 0.56rem; letter-spacing: 0.04em; }
-  .sponsor-go { width: 20px; height: 20px; }
-  .sponsor-go svg { width: 13px; height: 13px; }
+  .sponsor-go { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
