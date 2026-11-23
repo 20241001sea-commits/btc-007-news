@@ -2415,21 +2415,24 @@
 
     function flakeCount() {
       const mobile = width < 768;
-      const n = Math.round((width * height) / (mobile ? 24000 : 18000));
-      return Math.max(mobile ? 24 : 34, Math.min(mobile ? 40 : 58, n));
+      const n = Math.round((width * height) / (mobile ? 42000 : 32000));
+      return Math.max(mobile ? 14 : 20, Math.min(mobile ? 26 : 36, n));
     }
 
     function spawn(anywhere) {
+      const r = 6 + Math.random() * 8;
       return {
         x: Math.random() * width,
-        y: anywhere ? Math.random() * height : -8 - Math.random() * 48,
-        r: 1.3 + Math.random() * 2.5,
-        vy: 16 + Math.random() * 24,
-        vx: -7 + Math.random() * 14,
+        y: anywhere ? Math.random() * height : -r * 2 - Math.random() * 40,
+        r,
+        vy: 14 + Math.random() * 20,
+        vx: -8 + Math.random() * 16,
         phase: Math.random() * Math.PI * 2,
         wobble: 6 + Math.random() * 12,
         wobbleSpeed: 0.35 + Math.random() * 0.75,
-        alpha: 0.78 + Math.random() * 0.22
+        rot: Math.random() * Math.PI * 2,
+        spin: -0.7 + Math.random() * 1.4,
+        alpha: 0.86 + Math.random() * 0.14
       };
     }
 
@@ -2450,23 +2453,63 @@
       }
     }
 
+    function traceSnowflake(r) {
+      const branchAt = r * 0.55;
+      const branchLen = r * 0.34;
+      const tipAt = r * 0.8;
+      const tipLen = r * 0.18;
+      const branchAng = Math.PI / 4.2;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = i * Math.PI / 3;
+        const c = Math.cos(a);
+        const s = Math.sin(a);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(c * r, s * r);
+        const bx = c * branchAt;
+        const by = s * branchAt;
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + Math.cos(a + branchAng) * branchLen, by + Math.sin(a + branchAng) * branchLen);
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + Math.cos(a - branchAng) * branchLen, by + Math.sin(a - branchAng) * branchLen);
+        const tx = c * tipAt;
+        const ty = s * tipAt;
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + Math.cos(a + branchAng) * tipLen, ty + Math.sin(a + branchAng) * tipLen);
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + Math.cos(a - branchAng) * tipLen, ty + Math.sin(a - branchAng) * tipLen);
+      }
+    }
+
     function drawFlake(f) {
       const light = document.documentElement.getAttribute("data-theme") === "light";
+      const alpha = Math.min(1, f.alpha);
+      const line = Math.max(1, f.r * 0.14);
+      ctx.save();
+      ctx.translate(f.x, f.y);
+      ctx.rotate(f.rot);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
       if (light) {
-        ctx.beginPath();
-        ctx.fillStyle = "rgba(40, 36, 30, 0.20)";
-        ctx.arc(f.x + 0.25, f.y + 0.45, f.r + 0.95, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.strokeStyle = "rgba(40, 36, 30, 0.22)";
+        ctx.lineWidth = line + 1.15;
+        traceSnowflake(f.r);
+        ctx.stroke();
       } else {
-        ctx.beginPath();
-        ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
-        ctx.arc(f.x, f.y, f.r + 1.15, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+        ctx.lineWidth = line + 1.35;
+        traceSnowflake(f.r);
+        ctx.stroke();
       }
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.lineWidth = line;
+      traceSnowflake(f.r);
+      ctx.stroke();
       ctx.beginPath();
-      ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, f.alpha)})`;
-      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0.7, f.r * 0.09), 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
     }
 
     function frame(ts) {
@@ -2477,14 +2520,15 @@
       for (let i = 0; i < flakes.length; i++) {
         const f = flakes[i];
         f.phase += f.wobbleSpeed * dt;
+        f.rot += f.spin * dt;
         f.y += f.vy * dt;
         f.x += f.vx * dt + Math.sin(f.phase) * f.wobble * dt;
         if (f.y - f.r > height) {
           flakes[i] = spawn(false);
           continue;
         }
-        if (f.x < -12) f.x = width + 12;
-        else if (f.x > width + 12) f.x = -12;
+        if (f.x < -24) f.x = width + 24;
+        else if (f.x > width + 24) f.x = -24;
         drawFlake(f);
       }
       raf = requestAnimationFrame(frame);
