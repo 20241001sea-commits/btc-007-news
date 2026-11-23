@@ -2412,26 +2412,59 @@
     let running = false;
     let raf = 0;
     let last = 0;
+    let wind = 0;
+    let windTarget = 0;
+    let windTimer = 0;
+    let gust = 0;
+    let gustTarget = 0;
+    let gustTimer = 0;
 
     function flakeCount() {
       const mobile = width < 768;
-      const n = Math.round((width * height) / (mobile ? 42000 : 32000));
-      return Math.max(mobile ? 14 : 20, Math.min(mobile ? 26 : 36, n));
+      const n = Math.round((width * height) / (mobile ? 22000 : 16000));
+      return Math.max(mobile ? 24 : 38, Math.min(mobile ? 42 : 62, n));
+    }
+
+    function pickLayer() {
+      const u = Math.random();
+      if (u < 0.44) return 0;
+      if (u < 0.8) return 1;
+      return 2;
     }
 
     function spawn(anywhere) {
-      const r = 6 + Math.random() * 8;
+      const layer = pickLayer();
+      let r, vy, alpha;
+      if (layer === 0) {
+        r = 3.8 + Math.random() * 3.4;
+        vy = 8 + Math.random() * 10;
+        alpha = 0.58 + Math.random() * 0.18;
+      } else if (layer === 1) {
+        r = 6.5 + Math.random() * 4.5;
+        vy = 14 + Math.random() * 12;
+        alpha = 1;
+      } else {
+        r = 10 + Math.random() * 6;
+        vy = 20 + Math.random() * 16;
+        alpha = 1;
+      }
       return {
         x: Math.random() * width,
-        y: anywhere ? Math.random() * height : -r * 2 - Math.random() * 40,
+        y: anywhere ? Math.random() * height : -r * 2 - Math.random() * 48,
         r,
-        vy: 14 + Math.random() * 20,
-        vx: -8 + Math.random() * 16,
+        vy,
+        vx: -7 + Math.random() * 14,
         phase: Math.random() * Math.PI * 2,
-        wobble: 6 + Math.random() * 12,
-        wobbleSpeed: 0.35 + Math.random() * 0.75,
+        phase2: Math.random() * Math.PI * 2,
+        wobble: 7 + Math.random() * 16,
+        wobble2: 3 + Math.random() * 9,
+        wobbleSpeed: 0.28 + Math.random() * 0.95,
+        wobbleSpeed2: 0.12 + Math.random() * 0.55,
         rot: Math.random() * Math.PI * 2,
-        spin: -0.7 + Math.random() * 1.4
+        spin: (Math.random() < 0.18 ? 0 : -0.55 + Math.random() * 1.1) * (layer === 0 ? 0.45 : 1),
+        windMul: 0.3 + layer * 0.32 + Math.random() * 0.28,
+        layer,
+        alpha
       };
     }
 
@@ -2482,53 +2515,80 @@
 
     function drawFlake(f) {
       const light = document.documentElement.getAttribute("data-theme") === "light";
-      const line = Math.max(1.45, f.r * 0.2);
+      const far = f.layer === 0;
+      const near = f.layer === 2;
+      const line = far ? Math.max(0.9, f.r * 0.14) : Math.max(1.45, f.r * (near ? 0.22 : 0.2));
+      const alpha = far ? f.alpha : 1;
       ctx.save();
       ctx.translate(f.x, f.y);
       ctx.rotate(f.rot);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.globalAlpha = 1;
-      if (light) {
-        ctx.strokeStyle = "rgba(40, 36, 30, 0.1)";
-        ctx.lineWidth = line + 0.5;
+      if (light && !far) {
+        ctx.strokeStyle = "rgba(40, 36, 30, 0.08)";
+        ctx.lineWidth = line + 0.45;
         traceSnowflake(f.r);
         ctx.stroke();
-      } else {
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.lineWidth = line + 1.7;
+      } else if (!light) {
+        const glow = far ? 0.12 : near ? 0.32 : 0.22;
+        ctx.strokeStyle = "rgba(255, 255, 255, " + glow + ")";
+        ctx.lineWidth = line + (near ? 2 : far ? 0.8 : 1.4);
         traceSnowflake(f.r);
         ctx.stroke();
       }
-      ctx.strokeStyle = "#ffffff";
-      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = alpha >= 0.99 ? "#ffffff" : "rgba(255, 255, 255, " + alpha + ")";
+      ctx.fillStyle = ctx.strokeStyle;
       ctx.lineWidth = line;
       traceSnowflake(f.r);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0.85, f.r * 0.1), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0.7, f.r * (near ? 0.11 : 0.09)), 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
+    }
+
+    function updateWind(dt) {
+      windTimer -= dt;
+      if (windTimer <= 0) {
+        windTarget = -20 + Math.random() * 40;
+        windTimer = 2.4 + Math.random() * 4.8;
+      }
+      wind += (windTarget - wind) * Math.min(1, dt * 0.55);
+      gustTimer -= dt;
+      if (gustTimer <= 0) {
+        gustTarget = Math.random() < 0.4 ? (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 26) : 0;
+        gustTimer = 1.1 + Math.random() * 3.4;
+      }
+      gust += (gustTarget - gust) * Math.min(1, dt * 1.4);
     }
 
     function frame(ts) {
       if (!running) return;
       const dt = Math.min(0.05, last ? (ts - last) / 1000 : 0.016);
       last = ts;
+      updateWind(dt);
       ctx.clearRect(0, 0, width, height);
+      const drift = wind + gust;
       for (let i = 0; i < flakes.length; i++) {
         const f = flakes[i];
         f.phase += f.wobbleSpeed * dt;
+        f.phase2 += f.wobbleSpeed2 * dt;
         f.rot += f.spin * dt;
-        f.y += f.vy * dt;
-        f.x += f.vx * dt + Math.sin(f.phase) * f.wobble * dt;
+        const sway = Math.sin(f.phase) * f.wobble + Math.sin(f.phase2) * f.wobble2;
+        f.x += (f.vx + drift * f.windMul) * dt + sway * dt;
+        f.y += f.vy * (1 + Math.sin(f.phase2) * 0.1) * dt;
         if (f.y - f.r > height) {
           flakes[i] = spawn(false);
           continue;
         }
-        if (f.x < -24) f.x = width + 24;
-        else if (f.x > width + 24) f.x = -24;
-        drawFlake(f);
+        if (f.x < -28) f.x = width + 28;
+        else if (f.x > width + 28) f.x = -28;
+      }
+      for (let layer = 0; layer < 3; layer++) {
+        for (let i = 0; i < flakes.length; i++) {
+          if (flakes[i].layer === layer) drawFlake(flakes[i]);
+        }
       }
       raf = requestAnimationFrame(frame);
     }
