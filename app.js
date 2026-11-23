@@ -2415,21 +2415,21 @@
 
     function flakeCount() {
       const mobile = width < 768;
-      const n = Math.round((width * height) / (mobile ? 28000 : 22000));
-      return Math.max(mobile ? 18 : 26, Math.min(mobile ? 32 : 48, n));
+      const n = Math.round((width * height) / (mobile ? 24000 : 18000));
+      return Math.max(mobile ? 24 : 34, Math.min(mobile ? 40 : 58, n));
     }
 
     function spawn(anywhere) {
       return {
         x: Math.random() * width,
         y: anywhere ? Math.random() * height : -8 - Math.random() * 48,
-        r: 0.7 + Math.random() * 2.2,
-        vy: 14 + Math.random() * 22,
+        r: 1.3 + Math.random() * 2.5,
+        vy: 16 + Math.random() * 24,
         vx: -7 + Math.random() * 14,
         phase: Math.random() * Math.PI * 2,
         wobble: 6 + Math.random() * 12,
         wobbleSpeed: 0.35 + Math.random() * 0.75,
-        alpha: 0.32 + Math.random() * 0.42
+        alpha: 0.78 + Math.random() * 0.22
       };
     }
 
@@ -2450,11 +2450,23 @@
       }
     }
 
-    function flakeColor(alpha) {
+    function drawFlake(f) {
       const light = document.documentElement.getAttribute("data-theme") === "light";
-      return light
-        ? `rgba(72, 98, 122, ${Math.min(0.72, alpha * 0.9)})`
-        : `rgba(236, 245, 255, ${alpha})`;
+      if (light) {
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(40, 36, 30, 0.20)";
+        ctx.arc(f.x + 0.25, f.y + 0.45, f.r + 0.95, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+        ctx.arc(f.x, f.y, f.r + 1.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, f.alpha)})`;
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     function frame(ts) {
@@ -2473,10 +2485,7 @@
         }
         if (f.x < -12) f.x = width + 12;
         else if (f.x > width + 12) f.x = -12;
-        ctx.beginPath();
-        ctx.fillStyle = flakeColor(f.alpha);
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-        ctx.fill();
+        drawFlake(f);
       }
       raf = requestAnimationFrame(frame);
     }
