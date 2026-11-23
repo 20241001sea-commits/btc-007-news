@@ -57,6 +57,7 @@
     matrix: { w: "24h", area: "cap", top: 100, nativeOnly: true },
     coinDrawer: null,
     coinDrawerPinned: false,
+    matrixTip: null,
     historyLoaded: false,
     pollTimer: null,
     statsTimer: null,
@@ -409,6 +410,7 @@
     const th = tk && !tk.hidden ? tk.offsetHeight : 0;
     root.style.setProperty("--ticker-h", `${th}px`);
     if (ft) root.style.setProperty("--footer-h", `${ft.offsetHeight}px`);
+    syncMatrixTip();
   }
 
   function viewScroller() {
@@ -1586,6 +1588,7 @@
       return `<button type="button" class="mx-tile" data-coin="${esc(n.rec.s)}" data-dir="${dir}" data-lvl="${lvl}" style="left:${left.toFixed(1)}px;top:${topPx.toFixed(1)}px;width:${tw.toFixed(1)}px;height:${th.toFixed(1)}px" aria-label="${esc(label)}">${matrixTileInner(n.rec, w, tw, th)}</button>`;
     }).join("");
     box._mx = { nodes, top, compact, w, area: state.matrix.area, nativeOnly: state.matrix.nativeOnly };
+    syncMatrixTip();
   }
 
   function refreshMatrix(box) {
@@ -1825,6 +1828,7 @@
   }
 
   function updateCoinDetailQuotes() {
+    updateMatrixTipQuotes();
     if (!state.coinDrawer) return;
     const rec = state.market.bySym.get(state.coinDrawer);
     if (!rec) return;
@@ -1869,6 +1873,7 @@
   const FINE_HOVER_MQ = window.matchMedia("(any-hover: hover) and (any-pointer: fine)");
   const MATRIX_HOVER_CLOSE_MS = 220;
   let matrixHoverCloseTimer = null;
+  let matrixTipTile = null;
 
   function canHoverMatrix() {
     return FINE_HOVER_MQ.matches;
@@ -1881,12 +1886,144 @@
     }
   }
 
+  function hideMatrixTip() {
+    cancelMatrixHoverClose();
+    const was = state.matrixTip;
+    state.matrixTip = null;
+    matrixTipTile = null;
+    const tip = $("matrix-tip");
+    if (tip) {
+      tip.hidden = true;
+      tip.removeAttribute("data-coin");
+      tip.style.left = "";
+      tip.style.top = "";
+    }
+    if (was && !state.coinDrawer) markOpenTile(null);
+  }
+
+  function clampTip(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function positionMatrixTip(tile) {
+    const tip = $("matrix-tip");
+    if (!tip || tip.hidden || !tile || !tile.isConnected) return;
+    const gap = 8;
+    const margin = 8;
+    const tr = tile.getBoundingClientRect();
+    const board = tile.closest(".matrix-board");
+    const br = (board || tile).getBoundingClientRect();
+    const tipW = tip.offsetWidth;
+    const tipH = tip.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const fits = (left, top) => left >= margin && top >= margin && left + tipW <= vw - margin && top + tipH <= vh - margin;
+    const canLeftBoard = br.left - tipW - gap >= margin;
+    const canRightBoard = br.right + tipW + gap <= vw - margin;
+    const canLeftTile = tr.left - tipW - gap >= margin;
+    const canRightTile = tr.right + tipW + gap <= vw - margin;
+    const canAboveTile = tr.top - tipH - gap >= margin;
+    const canBelowTile = tr.bottom + tipH + gap <= vh - margin;
+    const rail = !!(board && board.classList.contains("is-rail"));
+    const vert = () => clampTip(tr.top, margin, vh - tipH - margin);
+    const horz = (x) => clampTip(x, margin, vw - tipW - margin);
+    let left;
+    let top;
+    if (rail && canLeftBoard) {
+      left = br.left - tipW - gap;
+      top = vert();
+    } else if (canLeftBoard && br.left >= vw - br.right) {
+      left = br.left - tipW - gap;
+      top = vert();
+    } else if (canRightBoard) {
+      left = br.right + gap;
+      top = vert();
+    } else if (canLeftBoard) {
+      left = br.left - tipW - gap;
+      top = vert();
+    } else if (tr.width >= tipW + 16 && tr.height >= tipH + 16) {
+      left = tr.left + 8;
+      top = tr.top + 8;
+    } else if (canRightTile && fits(tr.right + gap, vert())) {
+      left = tr.right + gap;
+      top = vert();
+    } else if (canLeftTile && fits(tr.left - tipW - gap, vert())) {
+      left = tr.left - tipW - gap;
+      top = vert();
+    } else if (canAboveTile) {
+      left = horz(tr.left);
+      top = tr.top - tipH - gap;
+    } else if (canBelowTile) {
+      left = horz(tr.left);
+      top = tr.bottom + gap;
+    } else {
+      left = horz(canLeftTile ? tr.left - tipW - gap : tr.right + gap);
+      top = clampTip(tr.top - tipH - gap, margin, vh - tipH - margin);
+    }
+    tip.style.left = `${Math.round(left)}px`;
+    tip.style.top = `${Math.round(top)}px`;
+  }
+
+  function currentMatrixTipTile() {
+    if (matrixTipTile && matrixTipTile.isConnected) return matrixTipTile;
+    if (!state.matrixTip) return null;
+    return document.querySelector(`.mx-tile[data-coin="${CSS.escape(state.matrixTip)}"]`);
+  }
+
+  function syncMatrixTip() {
+    if (!state.matrixTip) return;
+    const tile = currentMatrixTipTile();
+    if (!tile) {
+      hideMatrixTip();
+      return;
+    }
+    matrixTipTile = tile;
+    positionMatrixTip(tile);
+  }
+
+  function renderMatrixTip(rec) {
+    const tip = $("matrix-tip");
+    if (!tip || !rec) return;
+    tip.innerHTML = `${coinIcon(rec)}<div class="matrix-tip-body"><div class="matrix-tip-id"><span class="matrix-tip-sym">${esc(rec.s)}</span>${rec.n ? `<span class="matrix-tip-name">${esc(rec.n)}</span>` : ""}</div><div class="matrix-tip-px"><span data-tip-price>$${esc(formatPrice(rec.p))}</span><span data-tip-chg24 class="${pctClass(rec.c24)}">${esc(formatPct(rec.c24))}</span><span class="matrix-tip-win">24h</span></div></div>`;
+  }
+
+  function updateMatrixTipQuotes() {
+    if (!state.matrixTip) return;
+    const rec = state.market.bySym.get(state.matrixTip);
+    if (!rec) return;
+    const tip = $("matrix-tip");
+    if (!tip || tip.hidden) return;
+    const price = tip.querySelector("[data-tip-price]");
+    if (price) price.textContent = "$" + formatPrice(rec.p);
+    const c24 = tip.querySelector("[data-tip-chg24]");
+    if (c24) {
+      c24.textContent = formatPct(rec.c24);
+      c24.className = pctClass(rec.c24);
+    }
+  }
+
+  function showMatrixTip(sym, tile) {
+    const rec = state.market.bySym.get(sym) || state.market.byId.get(sym);
+    if (!rec || !rec.s || !tile) return;
+    if (state.coinDrawer) return;
+    cancelMatrixHoverClose();
+    state.matrixTip = rec.s;
+    matrixTipTile = tile;
+    const tip = $("matrix-tip");
+    if (!tip) return;
+    renderMatrixTip(rec);
+    tip.setAttribute("data-coin", rec.s);
+    tip.hidden = false;
+    positionMatrixTip(tile);
+    markOpenTile(rec.s);
+  }
+
   function scheduleMatrixHoverClose() {
-    if (state.coinDrawerPinned) return;
+    if (!state.matrixTip) return;
     cancelMatrixHoverClose();
     matrixHoverCloseTimer = setTimeout(() => {
       matrixHoverCloseTimer = null;
-      if (state.coinDrawer && !state.coinDrawerPinned) closeCoinDetail();
+      hideMatrixTip();
     }, MATRIX_HOVER_CLOSE_MS);
   }
 
@@ -1903,26 +2040,22 @@
     const drawer = $("coin-drawer");
     const panel = $("coin-panel");
     if (!drawer || !panel) return;
-    const preview = !!opts.preview && !opts.pinned;
-    cancelMatrixHoverClose();
+    hideMatrixTip();
     state.coinDrawer = rec.s;
-    state.coinDrawerPinned = !preview;
+    state.coinDrawerPinned = true;
     renderCoinDetail(rec, relatedNewsFor(rec.s));
     drawer.hidden = false;
-    drawer.classList.toggle("is-hover-preview", preview);
-    panel.setAttribute("aria-modal", preview ? "false" : "true");
-    if (!preview) document.body.style.overflow = "hidden";
+    drawer.classList.remove("is-hover-preview");
+    panel.setAttribute("aria-modal", "true");
+    document.body.style.overflow = "hidden";
     markOpenTile(rec.s);
-    if (!preview) {
-      const closeBtn = panel.querySelector("[data-close-coin]");
-      if (closeBtn) closeBtn.focus();
-    }
+    const closeBtn = panel.querySelector("[data-close-coin]");
+    if (closeBtn) closeBtn.focus();
     loadCoinDetailNews(rec.s);
   }
 
   function closeCoinDetail() {
     if (!state.coinDrawer) return;
-    cancelMatrixHoverClose();
     state.coinDrawer = null;
     state.coinDrawerPinned = false;
     const drawer = $("coin-drawer");
@@ -1933,7 +2066,7 @@
     }
     if (panel) panel.setAttribute("aria-modal", "true");
     document.body.style.overflow = "";
-    markOpenTile(null);
+    if (!state.matrixTip) markOpenTile(null);
   }
 
   function onMatrixTileClick(sym, e) {
@@ -1950,7 +2083,7 @@
     const evEl = (n) => (n && n.nodeType === 1 ? n : n && n.parentElement) || null;
     const inStayZone = (n) => {
       const el = evEl(n);
-      return !!(el && (el.closest(".mx-tile[data-coin]") || el.closest("#coin-panel")));
+      return !!(el && (el.closest(".mx-tile[data-coin]") || el.closest("#matrix-tip")));
     };
     document.addEventListener("pointerover", (e) => {
       if (!isMatrixHoverPointer(e)) return;
@@ -1959,20 +2092,20 @@
       if (tile) {
         const from = evEl(e.relatedTarget);
         if (from && tile.contains(from)) return;
-        if (state.coinDrawerPinned) return;
+        if (state.coinDrawer) return;
         cancelMatrixHoverClose();
-        openCoinDetail(tile.getAttribute("data-coin"), { preview: true });
+        showMatrixTip(tile.getAttribute("data-coin"), tile);
         return;
       }
-      if (start && start.closest("#coin-panel")) {
+      if (start && start.closest("#matrix-tip")) {
         cancelMatrixHoverClose();
         return;
       }
-      if (state.coinDrawer && !state.coinDrawerPinned) scheduleMatrixHoverClose();
+      if (state.matrixTip) scheduleMatrixHoverClose();
     }, true);
     document.addEventListener("pointerout", (e) => {
       if (!isMatrixHoverPointer(e)) return;
-      if (state.coinDrawerPinned || !state.coinDrawer) return;
+      if (!state.matrixTip) return;
       const from = evEl(e.target);
       if (!inStayZone(from)) return;
       const to = evEl(e.relatedTarget);
@@ -1982,6 +2115,7 @@
       }
       scheduleMatrixHoverClose();
     }, true);
+    document.addEventListener("scroll", syncMatrixTip, true);
   }
 
   function renderMarketsView() {
@@ -2427,14 +2561,19 @@
           openArticle(id);
           return;
         }
-        if (state.coinDrawer && !state.coinDrawerPinned && e.target.closest("#coin-panel")) {
-          openCoinDetail(state.coinDrawer, { pinned: true });
-        }
+      });
+    }
+    const tip = $("matrix-tip");
+    if (tip) {
+      tip.addEventListener("click", () => {
+        const sym = tip.getAttribute("data-coin") || state.matrixTip;
+        if (sym) openCoinDetail(sym, { pinned: true });
       });
     }
     window.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
       if (state.coinDrawer) { closeCoinDetail(); return; }
+      if (state.matrixTip) { hideMatrixTip(); return; }
       if (state.view === "article") closeArticle(true);
     });
     window.addEventListener("resize", measureChrome);

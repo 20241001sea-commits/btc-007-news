@@ -1593,12 +1593,74 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
   pointer-events: none;
 }
 .coin-drawer:not([hidden]) { pointer-events: auto; }
-.coin-drawer.is-hover-preview .coin-drawer-backdrop {
-  pointer-events: none;
-  background: color-mix(in srgb, #000 28%, transparent);
+.matrix-tip {
+  position: fixed;
+  z-index: 60;
+  min-width: 148px;
+  max-width: 220px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow), 0 0 0 1px var(--line-strong);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
 }
-html[data-theme="light"] .coin-drawer.is-hover-preview .coin-drawer-backdrop {
-  background: color-mix(in srgb, #132033 16%, transparent);
+.matrix-tip[hidden] { display: none; }
+.matrix-tip .coin-ic {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.matrix-tip-body { min-width: 0; flex: 1; }
+.matrix-tip-id {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.matrix-tip-sym {
+  font-weight: 750;
+  font-size: 0.82rem;
+  letter-spacing: -0.02em;
+}
+.matrix-tip-name {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.matrix-tip-px {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.matrix-tip-px [data-tip-price] {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.matrix-tip-px [data-tip-chg24] {
+  font-weight: 650;
+  font-size: 0.75rem;
+}
+.matrix-tip-win {
+  font-size: 0.62rem;
+  color: var(--text-faint);
+  font-weight: 600;
 }
 .coin-drawer-backdrop {
   appearance: none;
