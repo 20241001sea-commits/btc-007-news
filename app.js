@@ -9,6 +9,11 @@
   let newsBase = NEWS_PROXY;
   const LS_LANG = "bitxsea-news-lang";
   const LS_THEME = "bitxsea-news-theme";
+  const LS_PINS = "bitxsea-news-pins";
+  const SITE_TITLE = "BTC-007 News";
+  const HOME_DESC = "BTC-007 News — live crypto and market briefings. 实时快讯与行情。Automatically collected, independently designed.";
+  const HOME_OG_DESC = "Live market briefings / 实时快讯与行情";
+  const HOME_CANONICAL = "https://polite-lotus-yhf8.here.now/";
   const NEWS_LIMIT = 40;
   const POLL_MS = 1000;
   const STATS_MS = 20000;
@@ -62,7 +67,8 @@
     newsPauseUntil: 0,
     bootstrapped: false,
     suppressUrl: false,
-    articleCache: null
+    articleCache: null,
+    pins: { channels: [], coins: [] }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -375,6 +381,7 @@
       btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === state.lang ? "true" : "false");
     });
     renderChannels();
+    renderTrending();
     updateFeedHeading();
     renderFeed();
     renderMarketBits({ force: true });
@@ -447,7 +454,122 @@
     pill.querySelector(".live-label").textContent = t(key);
   }
 
-  function showView() {
+
+  function uniqueList(arr) {
+    const out = [];
+    const seen = new Set();
+    for (const v of arr) {
+      if (v == null || v === "") continue;
+      const k = String(v);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(k);
+    }
+    return out;
+  }
+
+  function loadPins() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(LS_PINS) || "null");
+      const channels = Array.isArray(raw && raw.channels) ? raw.channels : [];
+      const coins = Array.isArray(raw && raw.coins) ? raw.coins : [];
+      state.pins = {
+        channels: uniqueList(channels.filter((k) => k && k !== "all" && CHANNEL_MAP[k])),
+        coins: uniqueList(coins.map((s) => String(s || "").toUpperCase()).filter(Boolean))
+      };
+    } catch {
+      state.pins = { channels: [], coins: [] };
+    }
+  }
+
+  function persistPins() {
+    try { localStorage.setItem(LS_PINS, JSON.stringify(state.pins)); } catch { /* ignore */ }
+  }
+
+  function isPinned(kind, key) {
+    const list = state.pins && state.pins[kind];
+    return Array.isArray(list) && list.includes(key);
+  }
+
+  function togglePin(kind, key) {
+    if (!key) return;
+    if (kind === "channels") {
+      if (key === "all" || !CHANNEL_MAP[key]) return;
+    } else {
+      key = String(key).toUpperCase();
+    }
+    const list = state.pins[kind] ? state.pins[kind].slice() : [];
+    const i = list.indexOf(key);
+    if (i >= 0) list.splice(i, 1);
+    else list.push(key);
+    state.pins[kind] = list;
+    persistPins();
+    renderChannels();
+    renderTrending();
+    if (state.view === "markets") renderMarketsView();
+    if (state.coinDrawer && kind === "coins") {
+      const rec = state.market.bySym.get(state.coinDrawer);
+      if (rec) renderCoinDetail(rec, relatedNewsFor(rec.s));
+    }
+  }
+
+  function pinIcon() {
+    return `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="currentColor"><path d="M10.35 1.4a1 1 0 0 0-1.4 0L7.6 2.75 4.7 2.2a.75.75 0 0 0-.85 1.15L5.5 5.3 3.2 9.15a.65.65 0 0 0 .95.85l3.7-2.35 2.2 1.95a.75.75 0 0 0 1.25-.75l-.55-2.85 1.45-1.45a1 1 0 0 0 0-1.4L10.35 1.4zM6.4 11.1 5.15 12.7a.5.5 0 1 1-.8-.6l1.15-1.5.9.5z"/></svg>`;
+  }
+
+  function setMeta(selector, attr, value) {
+    const el = document.querySelector(selector);
+    if (el) el.setAttribute(attr, value);
+  }
+
+  function ensureOgUrl() {
+    let el = document.querySelector('meta[property="og:url"]');
+    if (!el) {
+      el = document.createElement("meta");
+      el.setAttribute("property", "og:url");
+      document.head.appendChild(el);
+    }
+    return el;
+  }
+
+  function applyHomeShareMeta() {
+    document.title = SITE_TITLE;
+    setMeta('meta[property="og:title"]', "content", SITE_TITLE);
+    setMeta('meta[name="twitter:title"]', "content", SITE_TITLE);
+    setMeta('meta[name="description"]', "content", HOME_DESC);
+    setMeta('meta[property="og:description"]', "content", HOME_OG_DESC);
+    setMeta('meta[name="twitter:description"]', "content", HOME_OG_DESC);
+    setMeta('link[rel="canonical"]', "href", HOME_CANONICAL);
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute("content", HOME_CANONICAL);
+  }
+
+  function storyShareText(it) {
+    if (!it) return "";
+    const note = it.data && it.data.note ? String(it.data.note) : "";
+    const points = digestPoints(it);
+    const body = it.body ? String(it.body).replace(/\s+/g, " ").trim() : "";
+    const raw = note || points[0] || body || pickText(it.i18n) || "";
+    return raw.length > 180 ? raw.slice(0, 177) + "…" : raw;
+  }
+
+  function applyStoryShareMeta(title, url, desc) {
+    const full = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
+    document.title = full;
+    setMeta('meta[property="og:title"]', "content", title || SITE_TITLE);
+    setMeta('meta[name="twitter:title"]', "content", title || SITE_TITLE);
+    if (desc) {
+      setMeta('meta[name="description"]', "content", desc);
+      setMeta('meta[property="og:description"]', "content", desc);
+      setMeta('meta[name="twitter:description"]', "content", desc);
+    }
+    if (url) {
+      setMeta('link[rel="canonical"]', "href", url);
+      ensureOgUrl().setAttribute("content", url);
+    }
+  }
+
+    function showView() {
     const isFeed = state.view === "feed";
     const isMarkets = state.view === "markets";
     const isArticle = state.view === "article";
@@ -462,7 +584,7 @@
     });
     if (isMarkets) renderMarketsView();
     measureChrome();
-    if (!isArticle) document.title = "BTC-007 News";
+    if (!isArticle) applyHomeShareMeta();
   }
 
   function readUrl() {
@@ -819,17 +941,22 @@
     const scroller = $("channel-scroller");
     const counts = (state.stats && state.stats.channels) || {};
     const allCount = state.stats ? state.stats.total_today : null;
-    const pills = [{ key: "all", label: t("all_channels"), count: allCount }].concat(
-      CHANNELS.map((c) => ({
-        key: c.key,
-        label: channelLabel(c.key),
-        count: counts[c.key] ? counts[c.key].today : null
-      }))
-    );
+    const pinnedKeys = (state.pins.channels || []).filter((k) => CHANNEL_MAP[k]);
+    const pinnedSet = new Set(pinnedKeys);
+    const restKeys = CHANNELS.map((c) => c.key).filter((k) => !pinnedSet.has(k));
+    const keys = ["all"].concat(pinnedKeys, restKeys);
+    const pills = keys.map((key) => key === "all"
+      ? { key: "all", label: t("all_channels"), count: allCount }
+      : { key, label: channelLabel(key), count: counts[key] ? counts[key].today : null });
     scroller.innerHTML = pills.map((p) => {
       const active = state.channel === p.key;
+      const pinned = p.key !== "all" && pinnedSet.has(p.key);
       const count = p.count == null ? "" : `<span class="channel-count">${esc(p.count)}</span>`;
-      return `<button type="button" class="channel-pill${active ? " is-active" : ""}" role="tab" aria-selected="${active}" data-ch="${esc(p.key)}">${esc(p.label)}${count}</button>`;
+      const showPin = p.key !== "all" && (active || pinned);
+      const pin = showPin
+        ? `<span class="pin-btn${pinned ? " is-pinned" : ""}" data-pin-ch="${esc(p.key)}" role="button" tabindex="0" aria-pressed="${pinned}" aria-label="${esc(t(pinned ? "unpin_item" : "pin_item", { s: p.label }))}">${pinIcon()}</span>`
+        : "";
+      return `<button type="button" class="channel-pill${active ? " is-active" : ""}${pinned ? " is-pinned" : ""}" role="tab" aria-selected="${active}" data-ch="${esc(p.key)}">${esc(p.label)}${count}${pin}</button>`;
     }).join("");
   }
 
@@ -936,10 +1063,25 @@
     if (!el) return;
     const coins = state.stats && state.stats.coins ? Object.entries(state.stats.coins) : [];
     coins.sort((a, b) => (b[1].count || 0) - (a[1].count || 0) || (b[1].last_ts || 0) - (a[1].last_ts || 0));
-    const top = coins.slice(0, 12);
-    el.innerHTML = top.map(([sym, info]) => {
+    const pinned = state.pins.coins || [];
+    const seen = new Set();
+    const top = [];
+    for (const sym of pinned) {
+      if (seen.has(sym)) continue;
+      seen.add(sym);
+      const info = (state.stats && state.stats.coins && state.stats.coins[sym]) || {};
+      top.push([sym, info, true]);
+    }
+    for (const [sym, info] of coins) {
+      if (seen.has(sym)) continue;
+      if (top.length >= 12) break;
+      seen.add(sym);
+      top.push([sym, info, false]);
+    }
+    el.innerHTML = top.map(([sym, info, pinnedTag]) => {
       const active = state.coin === sym;
-      return `<button type="button" class="coin-tag${active ? " is-active" : ""}" data-coin="${esc(sym)}">${esc(sym)} · ${esc(info.count)}</button>`;
+      const count = info && info.count != null && info.count !== "" ? ` · ${esc(info.count)}` : "";
+      return `<button type="button" class="coin-tag${active ? " is-active" : ""}${pinnedTag ? " is-pinned" : ""}" data-coin="${esc(sym)}">${esc(sym)}${count}</button>`;
     }).join("");
   }
 
@@ -1274,7 +1416,23 @@
     rows.sort((a, b) => (a.r || 9999) - (b.r || 9999));
     if (q) rows = rows.filter((r) => String(r.s).toLowerCase().includes(q) || String(r.n || "").toLowerCase().includes(q));
     else rows = rows.slice(0, 150);
-    return rows;
+    const pinned = state.pins.coins || [];
+    if (!pinned.length) return rows;
+    const head = [];
+    const seen = new Set();
+    if (!q) {
+      for (const s of pinned) {
+        const rec = state.market.bySym.get(s);
+        if (rec && rec.s && !seen.has(rec.s)) { seen.add(rec.s); head.push(rec); }
+      }
+    } else {
+      const order = new Map(pinned.map((s, i) => [s, i]));
+      for (const rec of rows) {
+        if (order.has(rec.s) && !seen.has(rec.s)) { seen.add(rec.s); head.push(rec); }
+      }
+      head.sort((a, b) => order.get(a.s) - order.get(b.s));
+    }
+    return head.concat(rows.filter((r) => !seen.has(r.s)));
   }
 
 
@@ -1634,6 +1792,9 @@
         ${coinIcon(rec)}
         <h2 id="coin-drawer-title"><span class="cdetail-sym">${esc(rec.s)}</span><span class="cdetail-name">${esc(rec.n || "")}</span></h2>
         <span class="cdetail-rank">#${esc(rec.r ?? "—")}</span>
+        <button type="button" class="cdetail-pin${isPinned("coins", rec.s) ? " is-pinned" : ""}" data-pin-coin="${esc(rec.s)}" aria-pressed="${isPinned("coins", rec.s)}" aria-label="${esc(t(isPinned("coins", rec.s) ? "unpin_item" : "pin_item", { s: rec.s }))}">
+          ${pinIcon()}
+        </button>
         <button type="button" class="cdetail-close" data-close-coin aria-label="${esc(t("close_detail"))}">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>
         </button>
@@ -1811,10 +1972,9 @@
   }
 
   function articleShareUrl(id) {
-    const u = new URL(location.href);
+    const u = new URL(location.origin + location.pathname);
     u.searchParams.set("lang", state.lang);
     u.searchParams.set("id", String(id));
-    u.searchParams.delete("view");
     u.hash = `#/n/${id}`;
     return u.toString();
   }
@@ -1850,7 +2010,7 @@
     const note = it.data && it.data.note ? String(it.data.note) : "";
     const body = it.body ? String(it.body) : "";
     const ch = (it.channels || [])[0] || "";
-    document.title = title ? `${title} · BTC-007 News` : "BTC-007 News";
+    applyStoryShareMeta(title, articleShareUrl(itemId(it)), storyShareText(it));
     const related = (data.related && Array.isArray(data.related.items)) ? data.related.items : [];
     const latest = Array.isArray(data.channel_latest) ? data.channel_latest : [];
     const prevId = data.prev_id;
@@ -1894,7 +2054,7 @@
     if (shareBtn) {
       shareBtn.addEventListener("click", async () => {
         if (navigator.share) {
-          try { await navigator.share({ title, url: shareUrl }); return; } catch { /* fall through */ }
+          try { await navigator.share({ title: title || SITE_TITLE, text: title || "", url: shareUrl }); return; } catch { /* fall through */ }
         }
         await copyText(shareUrl, copyBtn);
       });
@@ -1903,8 +2063,10 @@
     $("article").querySelectorAll(".story-lang").forEach((btn) => {
       btn.addEventListener("click", () => {
         const lang = btn.getAttribute("data-story-lang");
+        const localTitle = pickText(it.i18n, lang) || title;
         const h = $("article").querySelector("h1");
-        if (h) h.textContent = pickText(it.i18n, lang) || title;
+        if (h) h.textContent = localTitle;
+        applyStoryShareMeta(localTitle, articleShareUrl(itemId(it)), storyShareText(it));
         $("article").querySelectorAll(".story-lang").forEach((b) => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
       });
     });
@@ -1918,11 +2080,16 @@
     updateNewChip();
     const box = $("article");
     box.innerHTML = `<p class="feed-status">${esc(t("loading"))}</p>`;
+    const cached = state.items.get(String(id));
+    if (cached) {
+      applyStoryShareMeta(pickText(cached.i18n), articleShareUrl(id), storyShareText(cached));
+    }
     scrollView(0, false);
     try {
       const res = await fetchNewsPath(`/news/${encodeURIComponent(id)}`);
       if (res.status === 404) {
         box.innerHTML = `<div class="empty"><h2>${esc(t("not_found"))}</h2></div>`;
+        document.title = `${t("not_found")} · ${SITE_TITLE}`;
         return;
       }
       if (!res.ok) throw new Error("http");
@@ -2023,8 +2190,23 @@
       syncUrl(true);
     });
     $("channel-scroller").addEventListener("click", (e) => {
+      const pin = e.target.closest("[data-pin-ch]");
+      if (pin) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePin("channels", pin.getAttribute("data-pin-ch"));
+        return;
+      }
       const btn = e.target.closest("[data-ch]");
       if (btn) setChannel(btn.getAttribute("data-ch"));
+    });
+    $("channel-scroller").addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const pin = e.target.closest("[data-pin-ch]");
+      if (!pin) return;
+      e.preventDefault();
+      e.stopPropagation();
+      togglePin("channels", pin.getAttribute("data-pin-ch"));
     });
     $("search-form").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -2128,6 +2310,12 @@
     if (drawer) {
       drawer.addEventListener("click", (e) => {
         if (e.target.closest("[data-close-coin]")) { closeCoinDetail(); return; }
+        const pinCoin = e.target.closest("[data-pin-coin]");
+        if (pinCoin) {
+          e.preventDefault();
+          togglePin("coins", pinCoin.getAttribute("data-pin-coin"));
+          return;
+        }
         const filter = e.target.closest("[data-filter-coin]");
         if (filter) {
           const sym = filter.getAttribute("data-filter-coin");
@@ -2214,6 +2402,7 @@
   function init() {
     applyTheme(detectTheme(), false);
     loadMatrixPrefs();
+    loadPins();
     state.lang = detectLang();
     state.timeZone = browserTimeZone();
     state.timeZoneSource = "browser";
