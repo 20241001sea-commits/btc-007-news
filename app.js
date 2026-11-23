@@ -2399,8 +2399,131 @@
     return normalizeLang(navigator.language || "en") || "en";
   }
 
+
+  function startSnowfall() {
+    const canvas = $("snowfall");
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    let flakes = [];
+    let width = 0;
+    let height = 0;
+    let running = false;
+    let raf = 0;
+    let last = 0;
+
+    function flakeCount() {
+      const mobile = width < 768;
+      const n = Math.round((width * height) / (mobile ? 28000 : 22000));
+      return Math.max(mobile ? 18 : 26, Math.min(mobile ? 32 : 48, n));
+    }
+
+    function spawn(anywhere) {
+      return {
+        x: Math.random() * width,
+        y: anywhere ? Math.random() * height : -8 - Math.random() * 48,
+        r: 0.7 + Math.random() * 2.2,
+        vy: 14 + Math.random() * 22,
+        vx: -7 + Math.random() * 14,
+        phase: Math.random() * Math.PI * 2,
+        wobble: 6 + Math.random() * 12,
+        wobbleSpeed: 0.35 + Math.random() * 0.75,
+        alpha: 0.32 + Math.random() * 0.42
+      };
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.max(1, Math.round(width * dpr));
+      canvas.height = Math.max(1, Math.round(height * dpr));
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = flakeCount();
+      if (flakes.length < n) {
+        while (flakes.length < n) flakes.push(spawn(true));
+      } else if (flakes.length > n) {
+        flakes.length = n;
+      }
+    }
+
+    function flakeColor(alpha) {
+      const light = document.documentElement.getAttribute("data-theme") === "light";
+      return light
+        ? `rgba(72, 98, 122, ${Math.min(0.72, alpha * 0.9)})`
+        : `rgba(236, 245, 255, ${alpha})`;
+    }
+
+    function frame(ts) {
+      if (!running) return;
+      const dt = Math.min(0.05, last ? (ts - last) / 1000 : 0.016);
+      last = ts;
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < flakes.length; i++) {
+        const f = flakes[i];
+        f.phase += f.wobbleSpeed * dt;
+        f.y += f.vy * dt;
+        f.x += f.vx * dt + Math.sin(f.phase) * f.wobble * dt;
+        if (f.y - f.r > height) {
+          flakes[i] = spawn(false);
+          continue;
+        }
+        if (f.x < -12) f.x = width + 12;
+        else if (f.x > width + 12) f.x = -12;
+        ctx.beginPath();
+        ctx.fillStyle = flakeColor(f.alpha);
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (running || reducedMotion()) return;
+      canvas.hidden = false;
+      running = true;
+      last = 0;
+      raf = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      last = 0;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    function applyMotionPref() {
+      if (reducedMotion()) {
+        stop();
+        ctx.clearRect(0, 0, width, height);
+        canvas.hidden = true;
+        return;
+      }
+      canvas.hidden = false;
+      resize();
+      start();
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stop();
+      else if (!reducedMotion()) start();
+    });
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onMq = () => applyMotionPref();
+    if (mq.addEventListener) mq.addEventListener("change", onMq);
+    else if (mq.addListener) mq.addListener(onMq);
+    applyMotionPref();
+  }
+
   function init() {
     applyTheme(detectTheme(), false);
+    startSnowfall();
     loadMatrixPrefs();
     loadPins();
     state.lang = detectLang();
