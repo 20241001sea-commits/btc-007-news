@@ -2431,8 +2431,7 @@
         wobble: 6 + Math.random() * 12,
         wobbleSpeed: 0.35 + Math.random() * 0.75,
         rot: Math.random() * Math.PI * 2,
-        spin: -0.7 + Math.random() * 1.4,
-        alpha: 0.86 + Math.random() * 0.14
+        spin: -0.7 + Math.random() * 1.4
       };
     }
 
@@ -2483,31 +2482,31 @@
 
     function drawFlake(f) {
       const light = document.documentElement.getAttribute("data-theme") === "light";
-      const alpha = Math.min(1, f.alpha);
-      const line = Math.max(1, f.r * 0.14);
+      const line = Math.max(1.45, f.r * 0.2);
       ctx.save();
       ctx.translate(f.x, f.y);
       ctx.rotate(f.rot);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
+      ctx.globalAlpha = 1;
       if (light) {
-        ctx.strokeStyle = "rgba(40, 36, 30, 0.22)";
-        ctx.lineWidth = line + 1.15;
+        ctx.strokeStyle = "rgba(40, 36, 30, 0.1)";
+        ctx.lineWidth = line + 0.5;
         traceSnowflake(f.r);
         ctx.stroke();
       } else {
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
-        ctx.lineWidth = line + 1.35;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.lineWidth = line + 1.7;
         traceSnowflake(f.r);
         ctx.stroke();
       }
-      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.strokeStyle = "#ffffff";
+      ctx.fillStyle = "#ffffff";
       ctx.lineWidth = line;
       traceSnowflake(f.r);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0.7, f.r * 0.09), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0.85, f.r * 0.1), 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
