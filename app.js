@@ -56,6 +56,7 @@
     marketsQuery: "",
     matrix: { w: "24h", area: "cap", top: 100, nativeOnly: true },
     coinDrawer: null,
+    coinDrawerPinned: false,
     historyLoaded: false,
     pollTimer: null,
     statsTimer: null,
@@ -1865,29 +1866,122 @@
     } catch { /* ignore */ }
   }
 
-  function openCoinDetail(sym) {
+  const FINE_HOVER_MQ = window.matchMedia("(any-hover: hover) and (any-pointer: fine)");
+  const MATRIX_HOVER_CLOSE_MS = 220;
+  let matrixHoverCloseTimer = null;
+
+  function canHoverMatrix() {
+    return FINE_HOVER_MQ.matches;
+  }
+
+  function cancelMatrixHoverClose() {
+    if (matrixHoverCloseTimer) {
+      clearTimeout(matrixHoverCloseTimer);
+      matrixHoverCloseTimer = null;
+    }
+  }
+
+  function scheduleMatrixHoverClose() {
+    if (state.coinDrawerPinned) return;
+    cancelMatrixHoverClose();
+    matrixHoverCloseTimer = setTimeout(() => {
+      matrixHoverCloseTimer = null;
+      if (state.coinDrawer && !state.coinDrawerPinned) closeCoinDetail();
+    }, MATRIX_HOVER_CLOSE_MS);
+  }
+
+  function isMatrixHoverPointer(e) {
+    const typ = e && e.pointerType;
+    if (typ === "touch") return false;
+    if (typ === "mouse" || typ === "pen") return true;
+    return canHoverMatrix();
+  }
+
+  function openCoinDetail(sym, opts = {}) {
     const rec = state.market.bySym.get(sym) || state.market.byId.get(sym);
     if (!rec || !rec.s) return;
     const drawer = $("coin-drawer");
     const panel = $("coin-panel");
     if (!drawer || !panel) return;
+    const preview = !!opts.preview && !opts.pinned;
+    cancelMatrixHoverClose();
     state.coinDrawer = rec.s;
+    state.coinDrawerPinned = !preview;
     renderCoinDetail(rec, relatedNewsFor(rec.s));
     drawer.hidden = false;
-    document.body.style.overflow = "hidden";
+    drawer.classList.toggle("is-hover-preview", preview);
+    panel.setAttribute("aria-modal", preview ? "false" : "true");
+    if (!preview) document.body.style.overflow = "hidden";
     markOpenTile(rec.s);
-    const closeBtn = panel.querySelector("[data-close-coin]");
-    if (closeBtn) closeBtn.focus();
+    if (!preview) {
+      const closeBtn = panel.querySelector("[data-close-coin]");
+      if (closeBtn) closeBtn.focus();
+    }
     loadCoinDetailNews(rec.s);
   }
 
   function closeCoinDetail() {
     if (!state.coinDrawer) return;
+    cancelMatrixHoverClose();
     state.coinDrawer = null;
+    state.coinDrawerPinned = false;
     const drawer = $("coin-drawer");
-    if (drawer) drawer.hidden = true;
+    const panel = $("coin-panel");
+    if (drawer) {
+      drawer.hidden = true;
+      drawer.classList.remove("is-hover-preview");
+    }
+    if (panel) panel.setAttribute("aria-modal", "true");
     document.body.style.overflow = "";
     markOpenTile(null);
+  }
+
+  function onMatrixTileClick(sym, e) {
+    if (!sym) return;
+    if (isMatrixHoverPointer(e) || canHoverMatrix()) {
+      openCoinDetail(sym, { pinned: true });
+      return;
+    }
+    if (state.coinDrawer === sym) closeCoinDetail();
+    else openCoinDetail(sym, { pinned: true });
+  }
+
+  function bindMatrixHover() {
+    const evEl = (n) => (n && n.nodeType === 1 ? n : n && n.parentElement) || null;
+    const inStayZone = (n) => {
+      const el = evEl(n);
+      return !!(el && (el.closest(".mx-tile[data-coin]") || el.closest("#coin-panel")));
+    };
+    document.addEventListener("pointerover", (e) => {
+      if (!isMatrixHoverPointer(e)) return;
+      const start = evEl(e.target);
+      const tile = start && start.closest(".mx-tile[data-coin]");
+      if (tile) {
+        const from = evEl(e.relatedTarget);
+        if (from && tile.contains(from)) return;
+        if (state.coinDrawerPinned) return;
+        cancelMatrixHoverClose();
+        openCoinDetail(tile.getAttribute("data-coin"), { preview: true });
+        return;
+      }
+      if (start && start.closest("#coin-panel")) {
+        cancelMatrixHoverClose();
+        return;
+      }
+      if (state.coinDrawer && !state.coinDrawerPinned) scheduleMatrixHoverClose();
+    }, true);
+    document.addEventListener("pointerout", (e) => {
+      if (!isMatrixHoverPointer(e)) return;
+      if (state.coinDrawerPinned || !state.coinDrawer) return;
+      const from = evEl(e.target);
+      if (!inStayZone(from)) return;
+      const to = evEl(e.relatedTarget);
+      if (inStayZone(to)) {
+        cancelMatrixHoverClose();
+        return;
+      }
+      scheduleMatrixHoverClose();
+    }, true);
   }
 
   function renderMarketsView() {
@@ -2233,7 +2327,7 @@
     });
     $("rail").addEventListener("click", (e) => {
       const tile = e.target.closest(".mx-tile[data-coin]");
-      if (tile) { e.preventDefault(); openCoinDetail(tile.getAttribute("data-coin")); return; }
+      if (tile) { e.preventDefault(); onMatrixTileClick(tile.getAttribute("data-coin"), e); return; }
       const coin = e.target.closest("[data-coin]");
       if (coin) setCoin(coin.getAttribute("data-coin"));
     });
@@ -2268,11 +2362,14 @@
     });
     $("view-markets").addEventListener("click", (e) => {
       if (e.target.closest("[data-mx], [data-mx-chk]")) return;
-      const tile = e.target.closest(".mx-tile[data-coin], .markets-table tr[data-coin]");
-      if (tile) { e.preventDefault(); openCoinDetail(tile.getAttribute("data-coin")); return; }
+      const tableRow = e.target.closest(".markets-table tr[data-coin]");
+      if (tableRow) { e.preventDefault(); openCoinDetail(tableRow.getAttribute("data-coin"), { pinned: true }); return; }
+      const tile = e.target.closest(".mx-tile[data-coin]");
+      if (tile) { e.preventDefault(); onMatrixTileClick(tile.getAttribute("data-coin"), e); return; }
     });
     bindMatrixControls($("markets-matrix-tools"));
     bindMatrixControls($("rail-matrix-win"));
+    bindMatrixHover();
     document.querySelector('.brand[data-nav="home"]').addEventListener("click", (e) => {
       e.preventDefault();
       state.channel = "all";
@@ -2328,6 +2425,10 @@
           const id = story.getAttribute("data-open-id");
           closeCoinDetail();
           openArticle(id);
+          return;
+        }
+        if (state.coinDrawer && !state.coinDrawerPinned && e.target.closest("#coin-panel")) {
+          openCoinDetail(state.coinDrawer, { pinned: true });
         }
       });
     }

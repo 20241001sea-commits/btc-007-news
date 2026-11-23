@@ -1593,6 +1593,13 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
   pointer-events: none;
 }
 .coin-drawer:not([hidden]) { pointer-events: auto; }
+.coin-drawer.is-hover-preview .coin-drawer-backdrop {
+  pointer-events: none;
+  background: color-mix(in srgb, #000 28%, transparent);
+}
+html[data-theme="light"] .coin-drawer.is-hover-preview .coin-drawer-backdrop {
+  background: color-mix(in srgb, #132033 16%, transparent);
+}
 .coin-drawer-backdrop {
   appearance: none;
   -webkit-appearance: none;
