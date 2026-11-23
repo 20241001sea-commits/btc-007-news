@@ -1911,57 +1911,41 @@
     const gap = 8;
     const margin = 8;
     const tr = tile.getBoundingClientRect();
-    const board = tile.closest(".matrix-board");
-    const br = (board || tile).getBoundingClientRect();
     const tipW = tip.offsetWidth;
     const tipH = tip.offsetHeight;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const fits = (left, top) => left >= margin && top >= margin && left + tipW <= vw - margin && top + tipH <= vh - margin;
-    const canLeftBoard = br.left - tipW - gap >= margin;
-    const canRightBoard = br.right + tipW + gap <= vw - margin;
-    const canLeftTile = tr.left - tipW - gap >= margin;
-    const canRightTile = tr.right + tipW + gap <= vw - margin;
-    const canAboveTile = tr.top - tipH - gap >= margin;
-    const canBelowTile = tr.bottom + tipH + gap <= vh - margin;
-    const rail = !!(board && board.classList.contains("is-rail"));
-    const vert = () => clampTip(tr.top, margin, vh - tipH - margin);
-    const horz = (x) => clampTip(x, margin, vw - tipW - margin);
-    let left;
+    const maxLeft = Math.max(margin, vw - tipW - margin);
+    const left = clampTip(tr.left + (tr.width - tipW) / 2, margin, maxLeft);
+    const aboveTop = tr.top - tipH - gap;
+    const belowTop = tr.bottom + gap;
+    const roomAbove = tr.top - margin;
+    const roomBelow = vh - margin - tr.bottom;
     let top;
-    if (rail && canLeftBoard) {
-      left = br.left - tipW - gap;
-      top = vert();
-    } else if (canLeftBoard && br.left >= vw - br.right) {
-      left = br.left - tipW - gap;
-      top = vert();
-    } else if (canRightBoard) {
-      left = br.right + gap;
-      top = vert();
-    } else if (canLeftBoard) {
-      left = br.left - tipW - gap;
-      top = vert();
-    } else if (tr.width >= tipW + 16 && tr.height >= tipH + 16) {
-      left = tr.left + 8;
-      top = tr.top + 8;
-    } else if (canRightTile && fits(tr.right + gap, vert())) {
-      left = tr.right + gap;
-      top = vert();
-    } else if (canLeftTile && fits(tr.left - tipW - gap, vert())) {
-      left = tr.left - tipW - gap;
-      top = vert();
-    } else if (canAboveTile) {
-      left = horz(tr.left);
-      top = tr.top - tipH - gap;
-    } else if (canBelowTile) {
-      left = horz(tr.left);
-      top = tr.bottom + gap;
+    let place;
+    // Keep the card on the hovered tile: above when it can sit there (clamping
+    // a pixel or two to the viewport), and just below that same tile otherwise.
+    if (aboveTop >= margin) {
+      top = aboveTop;
+      place = "above";
+    } else if (roomAbove >= tipH - gap) {
+      top = margin;
+      place = "above";
+    } else if (belowTop + tipH <= vh - margin || roomBelow >= 72) {
+      top = clampTip(belowTop, margin, Math.max(margin, vh - tipH - margin));
+      place = "below";
+    } else if (roomAbove >= 48) {
+      top = margin;
+      place = "above";
     } else {
-      left = horz(canLeftTile ? tr.left - tipW - gap : tr.right + gap);
-      top = clampTip(tr.top - tipH - gap, margin, vh - tipH - margin);
+      top = clampTip(belowTop, margin, Math.max(margin, vh - tipH - margin));
+      place = "below";
     }
+    tip.dataset.place = place;
     tip.style.left = `${Math.round(left)}px`;
     tip.style.top = `${Math.round(top)}px`;
+    const caretX = tr.left + tr.width / 2 - left;
+    tip.style.setProperty("--tip-caret-x", `${Math.round(clampTip(caretX, 12, tipW - 12))}px`);
   }
 
   function currentMatrixTipTile() {
@@ -1984,7 +1968,36 @@
   function renderMatrixTip(rec) {
     const tip = $("matrix-tip");
     if (!tip || !rec) return;
-    tip.innerHTML = `${coinIcon(rec)}<div class="matrix-tip-body"><div class="matrix-tip-id"><span class="matrix-tip-sym">${esc(rec.s)}</span>${rec.n ? `<span class="matrix-tip-name">${esc(rec.n)}</span>` : ""}</div><div class="matrix-tip-px"><span data-tip-price>$${esc(formatPrice(rec.p))}</span><span data-tip-chg24 class="${pctClass(rec.c24)}">${esc(formatPct(rec.c24))}</span><span class="matrix-tip-win">24h</span></div></div>`;
+    const path = sparklinePath(rec.sp, 220, 32);
+    const spark = path
+      ? `<div class="matrix-tip-spark" aria-hidden="true"><svg viewBox="0 0 220 32" preserveAspectRatio="none"><path data-tip-spark d="${path}" fill="none" stroke="${Number(rec.c7) < 0 ? "var(--down)" : "var(--up)"}" stroke-width="1.7"/></svg></div>`
+      : "";
+    const ch = (key, val, attr) => `<div><span class="k">${esc(t(key))}</span><span class="v ${pctClass(val)}" ${attr}>${esc(formatPct(val))}</span></div>`;
+    tip.innerHTML = `
+      <div class="matrix-tip-hd">
+        ${coinIcon(rec)}
+        <div class="matrix-tip-id">
+          <span class="matrix-tip-sym">${esc(rec.s)}</span>
+          ${rec.n ? `<span class="matrix-tip-name">${esc(rec.n)}</span>` : ""}
+        </div>
+        <span class="matrix-tip-rank">#${esc(rec.r ?? "—")}</span>
+      </div>
+      <div class="matrix-tip-px">
+        <span data-tip-price>$${esc(formatPrice(rec.p))}</span>
+        <span data-tip-chg24 class="${pctClass(rec.c24)}">${esc(formatPct(rec.c24))}</span>
+      </div>
+      <div class="matrix-tip-chgs">
+        ${ch("chg_1h", rec.c1, 'data-tip-chg1')}
+        ${ch("chg_24h", rec.c24, 'data-tip-chg24b')}
+        ${ch("chg_7d", rec.c7, 'data-tip-chg7')}
+      </div>
+      ${spark}
+      <div class="matrix-tip-kv">
+        <div><span class="k">${esc(t("market_cap"))}</span><span class="v" data-tip-mc>${esc(compactUsd(marketCapOf(rec)))}</span></div>
+        <div><span class="k">${esc(t("volume"))}</span><span class="v" data-tip-vol>${esc(compactUsd(rec.v))}</span></div>
+        <div><span class="k">${esc(t("range_7d_lo"))}</span><span class="v" data-tip-lo>$${esc(formatPrice(rec.lo))}</span></div>
+        <div><span class="k">${esc(t("range_7d_hi"))}</span><span class="v" data-tip-hi>$${esc(formatPrice(rec.hi))}</span></div>
+      </div>`;
   }
 
   function updateMatrixTipQuotes() {
@@ -1993,12 +2006,26 @@
     if (!rec) return;
     const tip = $("matrix-tip");
     if (!tip || tip.hidden) return;
-    const price = tip.querySelector("[data-tip-price]");
-    if (price) price.textContent = "$" + formatPrice(rec.p);
-    const c24 = tip.querySelector("[data-tip-chg24]");
-    if (c24) {
-      c24.textContent = formatPct(rec.c24);
-      c24.className = pctClass(rec.c24);
+    const setText = (sel, text, cls) => {
+      const el = tip.querySelector(sel);
+      if (!el) return;
+      el.textContent = text;
+      if (cls != null) el.className = cls;
+    };
+    setText("[data-tip-price]", "$" + formatPrice(rec.p));
+    setText("[data-tip-chg24]", formatPct(rec.c24), pctClass(rec.c24));
+    setText("[data-tip-chg1]", formatPct(rec.c1), "v " + pctClass(rec.c1));
+    setText("[data-tip-chg24b]", formatPct(rec.c24), "v " + pctClass(rec.c24));
+    setText("[data-tip-chg7]", formatPct(rec.c7), "v " + pctClass(rec.c7));
+    setText("[data-tip-mc]", compactUsd(marketCapOf(rec)));
+    setText("[data-tip-vol]", compactUsd(rec.v));
+    setText("[data-tip-lo]", "$" + formatPrice(rec.lo));
+    setText("[data-tip-hi]", "$" + formatPrice(rec.hi));
+    const spark = tip.querySelector("[data-tip-spark]");
+    if (spark) {
+      const path = sparklinePath(rec.sp, 220, 32);
+      if (path) spark.setAttribute("d", path);
+      spark.setAttribute("stroke", Number(rec.c7) < 0 ? "var(--down)" : "var(--up)");
     }
   }
 

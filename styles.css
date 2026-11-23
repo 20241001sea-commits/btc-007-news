@@ -1594,43 +1594,67 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
 }
 .coin-drawer:not([hidden]) { pointer-events: auto; }
 .matrix-tip {
+  --tip-caret-x: 50%;
   position: fixed;
   z-index: 60;
-  min-width: 148px;
-  max-width: 220px;
+  width: 256px;
+  max-width: calc(100vw - 16px);
   margin: 0;
-  padding: 8px 10px;
+  padding: 8px 10px 7px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--surface);
   color: var(--text);
   box-shadow: var(--shadow), 0 0 0 1px var(--line-strong);
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
   cursor: pointer;
   text-align: left;
   font: inherit;
-  line-height: 1.2;
+  line-height: 1.25;
   appearance: none;
   -webkit-appearance: none;
 }
 .matrix-tip[hidden] { display: none; }
-.matrix-tip .coin-ic {
+.matrix-tip::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  left: var(--tip-caret-x);
+  background: var(--surface);
+  box-shadow: 1px 1px 0 var(--line-strong);
+  transform: translateX(-50%) rotate(45deg);
+  pointer-events: none;
+}
+.matrix-tip[data-place="above"]::after { bottom: -4px; }
+.matrix-tip[data-place="below"]::after {
+  top: -4px;
+  box-shadow: -1px -1px 0 var(--line-strong);
+}
+.matrix-tip-hd {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.matrix-tip-hd .coin-ic {
   width: 20px;
   height: 20px;
   flex: none;
 }
-.matrix-tip-body { min-width: 0; flex: 1; }
 .matrix-tip-id {
   display: flex;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
+  flex: 1;
 }
 .matrix-tip-sym {
   font-weight: 750;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   letter-spacing: -0.02em;
 }
 .matrix-tip-name {
@@ -1642,26 +1666,65 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
   text-overflow: ellipsis;
   min-width: 0;
 }
+.matrix-tip-rank {
+  margin-left: auto;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
 .matrix-tip-px {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  margin-top: 3px;
+  gap: 8px;
   font-variant-numeric: tabular-nums;
 }
 .matrix-tip-px [data-tip-price] {
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
 }
 .matrix-tip-px [data-tip-chg24] {
-  font-weight: 650;
-  font-size: 0.75rem;
+  font-weight: 700;
+  font-size: 0.82rem;
 }
-.matrix-tip-win {
-  font-size: 0.62rem;
+.matrix-tip-chgs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px 8px;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+.matrix-tip-chgs div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.matrix-tip-chgs .k,
+.matrix-tip-kv .k {
   color: var(--text-faint);
   font-weight: 600;
 }
+.matrix-tip-chgs .v,
+.matrix-tip-kv .v { font-weight: 650; }
+.matrix-tip-spark {
+  height: 26px;
+  margin: 0;
+}
+.matrix-tip-spark svg {
+  display: block;
+  width: 100%;
+  height: 26px;
+}
+.matrix-tip-kv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 10px;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+.matrix-tip-kv .k { display: block; font-size: 0.62rem; }
 .coin-drawer-backdrop {
   appearance: none;
   -webkit-appearance: none;
