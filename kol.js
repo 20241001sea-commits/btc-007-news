@@ -53,7 +53,7 @@
     zh: {
       stale: "数据源延迟，上次成功读取币安在 {s} 秒前", not_ready: "数据源尚未就绪",
       title: "KOL 带单监控",
-      note: "数据来自币安合约公开带单（Binance Copy Trading）的公开接口，由本站服务器读取。置顶交易员的订单大约每 2 到 3 秒更新一次，其他交易员大约每 60 秒一次，网页每 2 秒刷新。通常比实际下单晚若干秒。仅供参考，不构成投资建议。",
+      note: "数据来自币安合约公开带单（Binance Copy Trading）的公开接口，由本站服务器读取。置顶交易员的订单大约每 4 秒更新一次，其他交易员大约每分钟一次，网页每 2 秒刷新。通常比实际下单晚若干秒。仅供参考，不构成投资建议。",
       live: "实时", connecting: "连接中", paused: "已暂停", backoff: "被限流，{s} 秒后重试", error: "暂时取不到数据，正在重试",
       updated: "{s} 秒前更新", updated_min: "{m} 分钟前更新", never: "尚未更新",
       aum: "管理规模", balance: "带单余额", copiers: "跟单人数", share: "分润比例", full: "已满员",
@@ -65,6 +65,8 @@
       is_new: "新", times_in: "时间为 {z}", copy_status_paused: "已暂停带单",
       history_show: "查看历史记录 ({n})", history_hide: "收起",
       positions_summary: "当前持仓：{s}", positions_n: "{n} 笔", pinned: "置顶",
+      pinned_cadence: "置顶交易员·约每 4 秒更新",
+      others_cadence: "其他交易员大约每分钟更新一次",
       perp: "永续", side_long: "做多", side_short: "做空",
       sentence_open: "以 {price} 的价格开启 {symbol} {perp} 的{side}仓位，数量为 {qty}{base}，总价值为 {value}USDT。",
       sentence_close: "以 {price} 的价格平仓 {symbol} {perp} 的{side}仓位，数量为 {qty}{base}，总价值为 {value}USDT。",
@@ -75,7 +77,7 @@
     en: {
       stale: "Source delayed, last read from Binance {s}s ago", not_ready: "Data source not ready yet",
       title: "KOL trade monitor",
-      note: "Data comes from Binance Futures public copy trading pages. Our server polls the pinned trader’s orders about every 2–3 seconds and the others about every 60 seconds; this page refreshes every 2 seconds, so it usually lags by several seconds. For information only, not investment advice.",
+      note: "Data comes from Binance Futures public copy trading pages. Our server polls the pinned trader’s orders about every 4 seconds and the others about every minute; this page refreshes every 2 seconds, so it usually lags by several seconds. For information only, not investment advice.",
       live: "Live", connecting: "Connecting", paused: "Paused", backoff: "Rate limited, retrying in {s}s", error: "Can’t reach the data right now, retrying",
       updated: "Updated {s}s ago", updated_min: "Updated {m} min ago", never: "Not updated yet",
       aum: "AUM", balance: "Lead balance", copiers: "Copiers", share: "Profit share", full: "Full",
@@ -87,6 +89,8 @@
       is_new: "New", times_in: "Times in {z}", copy_status_paused: "Lead paused",
       history_show: "View history ({n})", history_hide: "Hide",
       positions_summary: "Open positions: {s}", positions_n: "{n}", pinned: "Pinned",
+      pinned_cadence: "Pinned · updates every ~4s",
+      others_cadence: "Other traders update about every minute",
       perp: "Perpetual", side_long: "long", side_short: "short",
       sentence_open: "Opened a {side} position on {symbol} {perp} at {price}, quantity {qty} {base}, total value {value}USDT.",
       sentence_close: "Closed a {side} position on {symbol} {perp} at {price}, quantity {qty} {base}, total value {value}USDT.",
@@ -97,7 +101,7 @@
     ko: {
       stale: "데이터 소스 지연, 마지막 바이낸스 조회 {s}초 전", not_ready: "데이터 소스 준비 중",
       title: "KOL 거래 모니터",
-      note: "데이터는 바이낸스 선물 공개 카피트레이딩 페이지에서 가져옵니다. 서버는 고정 트레이더의 주문을 약 2–3초마다, 다른 트레이더는 약 60초마다 읽고, 페이지는 2초마다 새로고침하므로 보통 실제 주문보다 수 초 늦습니다. 참고용이며 투자 조언이 아닙니다.",
+      note: "데이터는 바이낸스 선물 공개 카피트레이딩 페이지에서 가져옵니다. 서버는 고정 트레이더의 주문을 약 4초마다, 다른 트레이더는 약 1분마다 읽고, 페이지는 2초마다 새로고침하므로 보통 실제 주문보다 수 초 늦습니다. 참고용이며 투자 조언이 아닙니다.",
       live: "실시간", connecting: "연결 중", paused: "일시 중지", backoff: "요청 제한, {s}초 후 재시도", error: "데이터를 가져올 수 없어 재시도 중",
       updated: "{s}초 전 업데이트", updated_min: "{m}분 전 업데이트", never: "아직 업데이트 없음",
       aum: "운용 규모", balance: "리드 잔고", copiers: "카피 인원", share: "수익 배분", full: "정원 마감",
@@ -109,6 +113,8 @@
       is_new: "신규", times_in: "시간대 {z}", copy_status_paused: "리드 일시 중지",
       history_show: "거래 기록 보기 ({n})", history_hide: "접기",
       positions_summary: "현재 포지션: {s}", positions_n: "{n}건", pinned: "고정",
+      pinned_cadence: "고정 트레이더 · 약 4초마다 업데이트",
+      others_cadence: "다른 트레이더는 약 1분마다 업데이트됩니다",
       perp: "무기한", side_long: "롱", side_short: "숏",
       sentence_open: "{price}의 가격으로 {symbol} {perp} {side} 포지션을 열었습니다. 수량은 {qty}{base}, 총 가치는 {value}USDT입니다.",
       sentence_close: "{price}의 가격으로 {symbol} {perp} {side} 포지션을 청산했습니다. 수량은 {qty}{base}, 총 가치는 {value}USDT입니다.",
@@ -119,7 +125,7 @@
     tr: {
       stale: "Kaynak gecikmeli, Binance'ten son okuma {s} sn önce", not_ready: "Veri kaynağı henüz hazır değil",
       title: "KOL işlem takibi",
-      note: "Veriler Binance Vadeli herkese açık kopya işlem sayfalarından gelir. Sunucumuz sabitlenen işlemcinin emirlerini yaklaşık 2–3 saniyede bir, diğerlerini yaklaşık 60 saniyede bir okur; sayfa 2 saniyede bir yenilenir, bu yüzden genellikle birkaç saniye geride kalır. Yalnızca bilgi amaçlıdır, yatırım tavsiyesi değildir.",
+      note: "Veriler Binance Vadeli herkese açık kopya işlem sayfalarından gelir. Sunucumuz sabitlenen işlemcinin emirlerini yaklaşık 4 saniyede bir, diğerlerini yaklaşık her dakika okur; sayfa 2 saniyede bir yenilenir, bu yüzden genellikle birkaç saniye geride kalır. Yalnızca bilgi amaçlıdır, yatırım tavsiyesi değildir.",
       live: "Canlı", connecting: "Bağlanıyor", paused: "Duraklatıldı", backoff: "Hız sınırı, {s} sn sonra yeniden denenecek", error: "Veriye şu an ulaşılamıyor, yeniden deneniyor",
       updated: "{s} sn önce güncellendi", updated_min: "{m} dk önce güncellendi", never: "Henüz güncellenmedi",
       aum: "Yönetilen varlık", balance: "Lider bakiyesi", copiers: "Kopyalayanlar", share: "Kâr payı", full: "Dolu",
@@ -131,6 +137,8 @@
       is_new: "Yeni", times_in: "Saatler {z}", copy_status_paused: "Liderlik duraklatıldı",
       history_show: "Geçmişi gör ({n})", history_hide: "Gizle",
       positions_summary: "Açık pozisyonlar: {s}", positions_n: "{n}", pinned: "Sabit",
+      pinned_cadence: "Sabit · yaklaşık her 4 sn güncellenir",
+      others_cadence: "Diğer işlemciler yaklaşık her dakika güncellenir",
       perp: "Perpetual", side_long: "long", side_short: "short",
       sentence_open: "{symbol} {perp} {side} pozisyonu {price} fiyatından açıldı, miktar {qty} {base}, toplam değer {value}USDT.",
       sentence_close: "{symbol} {perp} {side} pozisyonu {price} fiyatından kapatıldı, miktar {qty} {base}, toplam değer {value}USDT.",
@@ -141,7 +149,7 @@
     ru: {
       stale: "Источник задерживается, последнее чтение Binance {s} с назад", not_ready: "Источник данных ещё не готов",
       title: "Мониторинг сделок KOL",
-      note: "Данные взяты с публичных страниц копи-трейдинга Binance Futures. Наш сервер обновляет ордера закреплённого трейдера примерно каждые 2–3 секунды, остальных — примерно каждые 60 секунд; страница обновляется каждые 2 секунды, поэтому обычно отстаёт на несколько секунд. Только для информации, не инвестиционный совет.",
+      note: "Данные взяты с публичных страниц копи-трейдинга Binance Futures. Наш сервер обновляет ордера закреплённого трейдера примерно каждые 4 секунды, остальных — примерно раз в минуту; страница обновляется каждые 2 секунды, поэтому обычно отстаёт на несколько секунд. Только для информации, не инвестиционный совет.",
       live: "В эфире", connecting: "Подключение", paused: "Пауза", backoff: "Лимит запросов, повтор через {s} с", error: "Данные сейчас недоступны, повторяем",
       updated: "Обновлено {s} с назад", updated_min: "Обновлено {m} мин назад", never: "Ещё не обновлялось",
       aum: "Под управлением", balance: "Баланс лидера", copiers: "Копировщики", share: "Доля прибыли", full: "Мест нет",
@@ -153,6 +161,8 @@
       is_new: "Новое", times_in: "Время: {z}", copy_status_paused: "Ведение приостановлено",
       history_show: "История ({n})", history_hide: "Скрыть",
       positions_summary: "Открытые позиции: {s}", positions_n: "{n}", pinned: "Закреплён",
+      pinned_cadence: "Закреплён · обновление ~каждые 4 с",
+      others_cadence: "Остальные трейдеры обновляются примерно раз в минуту",
       perp: "бессрочный", side_long: "лонг", side_short: "шорт",
       sentence_open: "Открыта {side} позиция по {symbol} {perp} по цене {price}, количество {qty} {base}, общая стоимость {value}USDT.",
       sentence_close: "Закрыта {side} позиция по {symbol} {perp} по цене {price}, количество {qty} {base}, общая стоимость {value}USDT.",
@@ -596,7 +606,7 @@
         <span class="kol-avatar-fallback" aria-hidden="true">${esc(initial)}</span>
         ${avatar ? `<img src="${esc(avatar)}" alt="" width="28" height="28" loading="lazy" referrerpolicy="no-referrer" data-kol-avatar>` : ""}
       </span>
-      <span class="kol-name">${esc(d.nickname || c.name)}${c.pinned ? ` <span class="kol-tag kol-pin-tag">${esc(t("pinned"))}</span>` : ""}${d.isPaused ? ` <span class="kol-tag">${esc(t("copy_status_paused"))}</span>` : ""}</span>`;
+      <span class="kol-name"><span class="kol-name-text">${esc(d.nickname || c.name)}</span>${c.pinned ? `<span class="kol-tag kol-pin-tag">${esc(t("pinned_cadence"))}</span>` : ""}${d.isPaused ? `<span class="kol-tag">${esc(t("copy_status_paused"))}</span>` : ""}</span>`;
     bindAvatars(head);
   }
 
@@ -746,6 +756,7 @@
         </span>
       </div>
       <p class="kol-zone" data-kol-zone></p>
+      <p class="kol-cadence-note">${esc(t("others_cadence"))}</p>
       <div class="kol-list" data-kol-grid>
         ${visibleKols().map((c) => `<article class="kol-row${c.pinned ? " is-pinned" : ""}" data-kol-card="${esc(c.key)}">
           <div class="kol-row-main" data-kol-expand="${esc(c.key)}" role="button" tabindex="0" aria-expanded="false" aria-controls="kol-detail-${esc(c.key)}">
