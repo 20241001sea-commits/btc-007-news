@@ -577,6 +577,7 @@ window.BITXSEA_I18N.ru = {
 
 window.BITXSEA_CHANNELS = [
   { key: "main", zh: "方程式新闻", en: "Headlines", ko: "헤드라인", tr: "Manşetler", ru: "Заголовки" },
+  { key: "kol-trading", zh: "KOL带单", en: "KOL Trades", ko: "KOL 카피트레이딩", tr: "KOL İşlemleri", ru: "Сделки KOL" },
   { key: "tradfi", zh: "财经", en: "TradFi", ko: "전통 금융", tr: "TradFi", ru: "TradFi" },
   { key: "binance", zh: "币安公告", en: "Binance", ko: "바이낸스", tr: "Binance", ru: "Binance" },
   { key: "korea", zh: "韩所监控", en: "Korean Exchanges", ko: "한국 거래소", tr: "Kore Borsaları", ru: "Корейские биржи" },

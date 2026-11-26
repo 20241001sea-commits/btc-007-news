@@ -1,0 +1,32 @@
+{
+  "collections": {
+    "kol_feed": {
+      "fields": {
+        "kol": {
+          "type": "string",
+          "required": true,
+          "maxLength": 32,
+          "trim": true
+        },
+        "checked_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snap": {
+          "type": "object"
+        }
+      },
+      "access": {
+        "read": "public",
+        "insert": "owner",
+        "update": "owner",
+        "delete": "owner"
+      },
+      "rateLimit": "3600/hour/ip"
+    }
+  }
+}

@@ -24,6 +24,7 @@
   const LANGS = ["zh", "en", "ko", "tr", "ru"];
   const LANG_LOCALE = { zh: "zh-Hans", en: "en", ko: "ko", tr: "tr", ru: "ru" };
   const HK_TZ = "Asia/Hong_Kong";
+  const KOL_CHANNEL = "kol-trading";
   const I18N = window.BITXSEA_I18N || {};
   const CHANNELS = window.BITXSEA_CHANNELS || [];
   const CHANNEL_MAP = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
@@ -288,6 +289,7 @@
     state.timeZoneSource = source || state.timeZoneSource || "browser";
     updateClock();
     if (!changed) return;
+    if (window.BTC007_KOL) window.BTC007_KOL.rerender();
     if (state.order.length) renderFeed();
     if (state.view === "article" && state.articleCache) renderArticle(state.articleCache);
     if (state.coinDrawer) {
@@ -393,6 +395,7 @@
       if (rec) renderCoinDetail(rec, relatedNewsFor(rec.s));
     }
     if (state.view === "article" && state.articleCache) renderArticle(state.articleCache);
+    if (window.BTC007_KOL) window.BTC007_KOL.rerender();
     updateNewChip();
     updateLivePill();
     updateClock();
@@ -586,6 +589,7 @@
       btn.classList.toggle("is-active", (nav === "feed" && (isFeed || isArticle)) || (nav === "markets" && isMarkets));
     });
     if (isMarkets) renderMarketsView();
+    syncKol();
     measureChrome();
     if (!isArticle) applyHomeShareMeta();
   }
@@ -671,8 +675,21 @@
     state.newsPauseUntil = Date.now() + ms;
   }
 
+  function isKolChannel() {
+    return state.channel === KOL_CHANNEL;
+  }
+
+  function syncKol() {
+    const on = state.view === "feed" && isKolChannel();
+    document.body.dataset.kol = on ? "1" : "";
+    const box = $("kol-view");
+    if (box) box.hidden = !on;
+    if (window.BTC007_KOL) window.BTC007_KOL.setActive(on);
+  }
+
   async function pollNews() {
     if (document.hidden) return;
+    if (isKolChannel()) return;
     if (Date.now() < state.newsPauseUntil) return;
     try {
       const res = await fetchNewsPath(`/news?${newsParams()}`);
@@ -881,6 +898,7 @@
   }
 
   function resetFeed({ refetch = true } = {}) {
+    syncKol();
     state.items.clear();
     state.order = [];
     state.queued = [];
@@ -889,6 +907,7 @@
     state.hasMore = true;
     updateNewChip();
     $("feed").innerHTML = `<div class="empty"><p>${esc(t("loading"))}</p></div>`;
+    if (isKolChannel()) return;
     if (refetch) pollNews();
   }
 
@@ -2666,6 +2685,17 @@
     return normalizeLang(navigator.language || "en") || "en";
   }
 
+
+  window.BTC007_APP = {
+    t,
+    esc,
+    locale,
+    formatPrice,
+    viewerTimeZone,
+    zoneLabel,
+    safeHttpUrl,
+    lang: () => state.lang
+  };
 
   function init() {
     applyTheme(detectTheme(), false);
