@@ -2308,7 +2308,7 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
   gap: 6px 8px;
 }
 .kol-stat, .kol-pos > div:not(.kol-pos-sym) { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.kol-stat .k, .kol-pos .k { font-size: 0.74em; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+.kol-stat .k, .kol-pos .k { font-size: 0.74em; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; overflow-wrap: anywhere; line-height: 1.25; }
 .kol-stat .v, .kol-pos .v { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .kol-sub {
   margin: 0 0 6px;

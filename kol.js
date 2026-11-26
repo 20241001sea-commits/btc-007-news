@@ -1,7 +1,7 @@
 /* BTC-007 News — KOL copy-trading monitor (kol-trading channel).
    Binance blocks proxy requests from here.now, so a poller on our own box reads the public
    Binance copy-trading endpoints (~every 2s) and writes one snapshot per KOL into this site's
-   here.now Site Data collection `kol_feed`. The page reads it same-origin every 3s while visible.
+   here.now Site Data collection `kol_feed`. The page reads it same-origin every 2s while visible.
    To add a trader: add it here and to KOLS in the poller (kol-trading-poller/poller.py).
    Traders with `pinned: true` (熬鹰资本) always render first, ahead of any later profit or
    drawdown sort, so new additions cannot displace them. */
@@ -42,8 +42,8 @@
   ];
 
   const FEED_URL = "./.herenow/data/kol_feed?limit=30";
-  const POLL_MS = 3000;
-  const STALE_MS = 90000;
+  const POLL_MS = 2000;
+  const STALE_MS = 120000;
   const RATE_BACKOFF_MS = 10000;
   const MAX_BACKOFF_MS = 30000;
   const MAX_ROWS = 60;
@@ -53,7 +53,7 @@
     zh: {
       stale: "数据源延迟，上次成功读取币安在 {s} 秒前", not_ready: "数据源尚未就绪",
       title: "KOL 带单监控",
-      note: "数据来自币安合约公开带单（Binance Copy Trading）的公开接口，由本站服务器读取。置顶交易员的订单大约每 7 秒更新一次，其他交易员大约每 35 秒一次，网页每 3 秒刷新。通常比实际下单晚若干秒。仅供参考，不构成投资建议。",
+      note: "数据来自币安合约公开带单（Binance Copy Trading）的公开接口，由本站服务器读取。置顶交易员的订单大约每 2 到 3 秒更新一次，其他交易员大约每 60 秒一次，网页每 2 秒刷新。通常比实际下单晚若干秒。仅供参考，不构成投资建议。",
       live: "实时", connecting: "连接中", paused: "已暂停", backoff: "被限流，{s} 秒后重试", error: "暂时取不到数据，正在重试",
       updated: "{s} 秒前更新", updated_min: "{m} 分钟前更新", never: "尚未更新",
       aum: "管理规模", balance: "带单余额", copiers: "跟单人数", share: "分润比例", full: "已满员",
@@ -68,12 +68,14 @@
       perp: "永续", side_long: "做多", side_short: "做空",
       sentence_open: "以 {price} 的价格开启 {symbol} {perp} 的{side}仓位，数量为 {qty}{base}，总价值为 {value}USDT。",
       sentence_close: "以 {price} 的价格平仓 {symbol} {perp} 的{side}仓位，数量为 {qty}{base}，总价值为 {value}USDT。",
-      sentence_pnl: "已实现盈亏为 {pnl}USDT。"
+      sentence_pnl: "已实现盈亏为 {pnl}USDT。",
+      mdd: "最大回撤", roi: "收益率", lead_pnl: "盈亏", win_rate: "胜率",
+      range_days: "{n}天", stat_ranged: "{label}（{range}）"
     },
     en: {
       stale: "Source delayed, last read from Binance {s}s ago", not_ready: "Data source not ready yet",
       title: "KOL trade monitor",
-      note: "Data comes from Binance Futures public copy trading pages. Our server polls the pinned trader’s orders about every 7 seconds and the others about every 35 seconds; this page refreshes every 3 seconds, so it usually lags by several seconds. For information only, not investment advice.",
+      note: "Data comes from Binance Futures public copy trading pages. Our server polls the pinned trader’s orders about every 2–3 seconds and the others about every 60 seconds; this page refreshes every 2 seconds, so it usually lags by several seconds. For information only, not investment advice.",
       live: "Live", connecting: "Connecting", paused: "Paused", backoff: "Rate limited, retrying in {s}s", error: "Can’t reach the data right now, retrying",
       updated: "Updated {s}s ago", updated_min: "Updated {m} min ago", never: "Not updated yet",
       aum: "AUM", balance: "Lead balance", copiers: "Copiers", share: "Profit share", full: "Full",
@@ -88,12 +90,14 @@
       perp: "Perpetual", side_long: "long", side_short: "short",
       sentence_open: "Opened a {side} position on {symbol} {perp} at {price}, quantity {qty} {base}, total value {value}USDT.",
       sentence_close: "Closed a {side} position on {symbol} {perp} at {price}, quantity {qty} {base}, total value {value}USDT.",
-      sentence_pnl: "Realized PnL {pnl}USDT."
+      sentence_pnl: "Realized PnL {pnl}USDT.",
+      mdd: "Max drawdown", roi: "ROI", lead_pnl: "PnL", win_rate: "Win rate",
+      range_days: "{n}D", stat_ranged: "{label} ({range})"
     },
     ko: {
       stale: "데이터 소스 지연, 마지막 바이낸스 조회 {s}초 전", not_ready: "데이터 소스 준비 중",
       title: "KOL 거래 모니터",
-      note: "데이터는 바이낸스 선물 공개 카피트레이딩 페이지에서 가져옵니다. 서버는 고정 트레이더의 주문을 약 7초마다, 다른 트레이더는 약 35초마다 읽고, 페이지는 3초마다 새로고침하므로 보통 실제 주문보다 수 초 늦습니다. 참고용이며 투자 조언이 아닙니다.",
+      note: "데이터는 바이낸스 선물 공개 카피트레이딩 페이지에서 가져옵니다. 서버는 고정 트레이더의 주문을 약 2–3초마다, 다른 트레이더는 약 60초마다 읽고, 페이지는 2초마다 새로고침하므로 보통 실제 주문보다 수 초 늦습니다. 참고용이며 투자 조언이 아닙니다.",
       live: "실시간", connecting: "연결 중", paused: "일시 중지", backoff: "요청 제한, {s}초 후 재시도", error: "데이터를 가져올 수 없어 재시도 중",
       updated: "{s}초 전 업데이트", updated_min: "{m}분 전 업데이트", never: "아직 업데이트 없음",
       aum: "운용 규모", balance: "리드 잔고", copiers: "카피 인원", share: "수익 배분", full: "정원 마감",
@@ -108,12 +112,14 @@
       perp: "무기한", side_long: "롱", side_short: "숏",
       sentence_open: "{price}의 가격으로 {symbol} {perp} {side} 포지션을 열었습니다. 수량은 {qty}{base}, 총 가치는 {value}USDT입니다.",
       sentence_close: "{price}의 가격으로 {symbol} {perp} {side} 포지션을 청산했습니다. 수량은 {qty}{base}, 총 가치는 {value}USDT입니다.",
-      sentence_pnl: "실현 손익은 {pnl}USDT입니다."
+      sentence_pnl: "실현 손익은 {pnl}USDT입니다.",
+      mdd: "최대 낙폭", roi: "수익률", lead_pnl: "손익", win_rate: "승률",
+      range_days: "{n}일", stat_ranged: "{label} ({range})"
     },
     tr: {
       stale: "Kaynak gecikmeli, Binance'ten son okuma {s} sn önce", not_ready: "Veri kaynağı henüz hazır değil",
       title: "KOL işlem takibi",
-      note: "Veriler Binance Vadeli herkese açık kopya işlem sayfalarından gelir. Sunucumuz sabitlenen işlemcinin emirlerini yaklaşık 7 saniyede bir, diğerlerini yaklaşık 35 saniyede bir okur; sayfa 3 saniyede bir yenilenir, bu yüzden genellikle birkaç saniye geride kalır. Yalnızca bilgi amaçlıdır, yatırım tavsiyesi değildir.",
+      note: "Veriler Binance Vadeli herkese açık kopya işlem sayfalarından gelir. Sunucumuz sabitlenen işlemcinin emirlerini yaklaşık 2–3 saniyede bir, diğerlerini yaklaşık 60 saniyede bir okur; sayfa 2 saniyede bir yenilenir, bu yüzden genellikle birkaç saniye geride kalır. Yalnızca bilgi amaçlıdır, yatırım tavsiyesi değildir.",
       live: "Canlı", connecting: "Bağlanıyor", paused: "Duraklatıldı", backoff: "Hız sınırı, {s} sn sonra yeniden denenecek", error: "Veriye şu an ulaşılamıyor, yeniden deneniyor",
       updated: "{s} sn önce güncellendi", updated_min: "{m} dk önce güncellendi", never: "Henüz güncellenmedi",
       aum: "Yönetilen varlık", balance: "Lider bakiyesi", copiers: "Kopyalayanlar", share: "Kâr payı", full: "Dolu",
@@ -128,12 +134,14 @@
       perp: "Perpetual", side_long: "long", side_short: "short",
       sentence_open: "{symbol} {perp} {side} pozisyonu {price} fiyatından açıldı, miktar {qty} {base}, toplam değer {value}USDT.",
       sentence_close: "{symbol} {perp} {side} pozisyonu {price} fiyatından kapatıldı, miktar {qty} {base}, toplam değer {value}USDT.",
-      sentence_pnl: "Gerçekleşen K/Z {pnl}USDT."
+      sentence_pnl: "Gerçekleşen K/Z {pnl}USDT.",
+      mdd: "Maks. düşüş", roi: "ROI", lead_pnl: "K/Z", win_rate: "Kazanma oranı",
+      range_days: "{n}g", stat_ranged: "{label} ({range})"
     },
     ru: {
       stale: "Источник задерживается, последнее чтение Binance {s} с назад", not_ready: "Источник данных ещё не готов",
       title: "Мониторинг сделок KOL",
-      note: "Данные взяты с публичных страниц копи-трейдинга Binance Futures. Наш сервер обновляет ордера закреплённого трейдера примерно каждые 7 секунд, остальных — примерно каждые 35 секунд; страница обновляется каждые 3 секунды, поэтому обычно отстаёт на несколько секунд. Только для информации, не инвестиционный совет.",
+      note: "Данные взяты с публичных страниц копи-трейдинга Binance Futures. Наш сервер обновляет ордера закреплённого трейдера примерно каждые 2–3 секунды, остальных — примерно каждые 60 секунд; страница обновляется каждые 2 секунды, поэтому обычно отстаёт на несколько секунд. Только для информации, не инвестиционный совет.",
       live: "В эфире", connecting: "Подключение", paused: "Пауза", backoff: "Лимит запросов, повтор через {s} с", error: "Данные сейчас недоступны, повторяем",
       updated: "Обновлено {s} с назад", updated_min: "Обновлено {m} мин назад", never: "Ещё не обновлялось",
       aum: "Под управлением", balance: "Баланс лидера", copiers: "Копировщики", share: "Доля прибыли", full: "Мест нет",
@@ -148,7 +156,9 @@
       perp: "бессрочный", side_long: "лонг", side_short: "шорт",
       sentence_open: "Открыта {side} позиция по {symbol} {perp} по цене {price}, количество {qty} {base}, общая стоимость {value}USDT.",
       sentence_close: "Закрыта {side} позиция по {symbol} {perp} по цене {price}, количество {qty} {base}, общая стоимость {value}USDT.",
-      sentence_pnl: "Реализованный PnL {pnl}USDT."
+      sentence_pnl: "Реализованный PnL {pnl}USDT.",
+      mdd: "Макс. просадка", roi: "Доходность", lead_pnl: "PnL", win_rate: "Винрейт",
+      range_days: "{n} дн.", stat_ranged: "{label} ({range})"
     }
   };
 
@@ -358,6 +368,7 @@
     loaded: false,
     detail: null,
     positions: null,
+    stats: null,
     srcOk: 0,
     srcErr: null,
     hasRecord: false
@@ -394,14 +405,18 @@
     }
     const detailSig = JSON.stringify(snap.detail || null);
     const posSig = JSON.stringify(snap.positions == null ? null : snap.positions);
+    const statsSig = JSON.stringify(snap.stats || null);
     const detailChanged = detailSig !== s._detailSig;
     const posChanged = posSig !== s._posSig || detailChanged;
+    const statsChanged = statsSig !== s._statsSig;
     s._detailSig = detailSig;
     s._posSig = posSig;
+    s._statsSig = statsSig;
     s.detail = snap.detail || null;
     s.positions = Array.isArray(snap.positions) ? snap.positions : null;
+    s.stats = snap.stats && typeof snap.stats === "object" ? snap.stats : null;
     const key = s.cfg.key;
-    if (detailChanged) { renderHead(key); renderDetail(key); }
+    if (detailChanged || statsChanged) { renderHead(key); renderDetail(key); }
     if (posChanged) renderPositions(key);
     if (ordersChanged) renderOrders(key);
   }
@@ -585,6 +600,27 @@
     bindAvatars(head);
   }
 
+  function rangeSuffix(stats) {
+    const r = stats && typeof stats.timeRange === "string" ? stats.timeRange.trim() : "";
+    const m = r.match(/^(\d+)D$/i);
+    return m ? t("range_days", { n: m[1] }) : "";
+  }
+  function rangedLabel(key, stats) {
+    const suf = rangeSuffix(stats);
+    return suf ? t("stat_ranged", { label: t(key), range: suf }) : t(key);
+  }
+  function exactPlain(v, suffix) {
+    const x = exactStr(v);
+    return x == null ? "—" : `${esc(withSep(x))}${suffix}`;
+  }
+  function exactSigned(v, suffix) {
+    const x = exactStr(v);
+    if (x == null) return "—";
+    const cls = pnlClass(v);
+    const body = `${esc(withSep(x))}${suffix}`;
+    return cls ? `<span class="${cls}">${body}</span>` : body;
+  }
+
   function renderDetail(key) {
     const el = cardEl(key);
     const box = el && el.querySelector("[data-kol-profile]");
@@ -592,11 +628,17 @@
     const s = st(key);
     const c = s.cfg;
     const d = s.detail || {};
+    const stt = s.stats || null;
     const cur = num(d.currentCopyCount);
     const max = num(d.maxCopyCount);
     const full = cur != null && max != null && max > 0 && cur >= max;
     const stat = (label, value, extra = "") => `<div class="kol-stat"><span class="k">${esc(label)}</span><span class="v">${value}${extra}</span></div>`;
     const bio = typeof d.description === "string" ? d.description.trim() : "";
+    const perf = `
+        ${stat(rangedLabel("mdd", stt), exactPlain(stt && stt.mdd, "%"))}
+        ${stat(rangedLabel("roi", stt), exactSigned(stt && stt.roi, "%"))}
+        ${stat(rangedLabel("lead_pnl", stt), exactSigned(stt && stt.pnl, " USDT"))}
+        ${stat(rangedLabel("win_rate", stt), exactPlain(stt && stt.winRate, "%"))}`;
     box.innerHTML = `
       <div class="kol-links">
         <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(t("binance_page"))} ↗</a>
@@ -608,6 +650,7 @@
         ${stat(t("balance"), esc(fmtUsdt(d.marginBalance, true)))}
         ${stat(t("copiers"), cur != null ? `${esc(fmtNum(cur, 0))}${max != null ? ` / ${esc(fmtNum(max, 0))}` : ""}` : "—", full ? ` <span class="kol-tag">${esc(t("full"))}</span>` : "")}
         ${stat(t("share"), num(d.profitSharingRate) != null ? `${esc(fmtNum(d.profitSharingRate, 2))}%` : "—")}
+        ${perf}
       </div>` : `<p class="kol-muted">${esc(feed.status === "error" ? t("load_failed") : t("loading"))}</p>`}`;
   }
 
