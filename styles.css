@@ -2103,7 +2103,10 @@ body[data-kol="1"] #feed-status,
 body[data-kol="1"] #feed-sentinel,
 body[data-trader="1"] #feed,
 body[data-trader="1"] #feed-status,
-body[data-trader="1"] #feed-sentinel { display: none !important; }
+body[data-trader="1"] #feed-sentinel,
+body[data-paper="1"] #feed,
+body[data-paper="1"] #feed-status,
+body[data-paper="1"] #feed-sentinel { display: none !important; }
 
 /* kol-trading channel: news-style list, one compact row per trader. */
 .kol-view {

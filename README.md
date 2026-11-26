@@ -13,3 +13,7 @@ Open `index.html` after a static deploy, or republish the folder with here.now u
 ## Hype top-10 traders channel (`?ch=trader-leaderboard`)
 
 `traders.js` renders the top 10 Hyperliquid traders by 30-day PnL (only addresses with a perpetual fill in the last 7 days), using Hyperliquid's public no-login API. A poller on the box (`/workspace/hl-leaderboard-poller/poller.py`, started with `run.sh`, outside the repo) reads `stats-data.hyperliquid.xyz/Mainnet/leaderboard` every 10 minutes, follows the 10 addresses' fills over the `wss://api.hyperliquid.xyz/ws` `userFills` subscription (HTTP `userFills` fallback), reads `clearinghouseState` and `portfolio` (30D max drawdown estimate), and writes one snapshot per trader into the Site Data collection `trader_feed` (declared in `.herenow/data.json`, public read, owner-only writes). The page reads it every 2s while the tab is visible. Rows reuse the `kol-*` styles.
+
+## Paper Top 10 Traders by PnL (`paper-leaderboard`)
+
+Papertrade (exchange.papertrade.xyz) is a **real-money, on-chain perpetual exchange on HyperEVM mainnet** (BTC/ETH, USDC margin, every trade has a txHash). It is not a simulated game. A poller outside this repo (`/workspace/paper-leaderboard-poller`) follows its public no-login "Accounts" leaderboard (24h window), trade history and live position streams, and PATCHes one snapshot per trader into the Site Data collection `paper_feed`. `paper.js` renders it with the same row/expand/history pattern as the Hyperliquid channel. Traders without public trades or inactive for 7 days are skipped.
