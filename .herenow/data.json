@@ -27,6 +27,34 @@
         "delete": "owner"
       },
       "rateLimit": "3600/hour/ip"
+    },
+    "trader_feed": {
+      "fields": {
+        "checked_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snap": {
+          "type": "object"
+        },
+        "trader": {
+          "type": "string",
+          "required": true,
+          "maxLength": 64,
+          "trim": true
+        }
+      },
+      "access": {
+        "read": "public",
+        "insert": "owner",
+        "update": "owner",
+        "delete": "owner"
+      },
+      "rateLimit": "3600/hour/ip"
     }
   }
 }

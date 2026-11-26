@@ -25,6 +25,7 @@
   const LANG_LOCALE = { zh: "zh-Hans", en: "en", ko: "ko", tr: "tr", ru: "ru" };
   const HK_TZ = "Asia/Hong_Kong";
   const KOL_CHANNEL = "kol-trading";
+  const TRADER_CHANNEL = "trader-leaderboard";
   const I18N = window.BITXSEA_I18N || {};
   const CHANNELS = window.BITXSEA_CHANNELS || [];
   const CHANNEL_MAP = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
@@ -290,6 +291,7 @@
     updateClock();
     if (!changed) return;
     if (window.BTC007_KOL) window.BTC007_KOL.rerender();
+    if (window.BTC007_TRADERS) window.BTC007_TRADERS.rerender();
     if (state.order.length) renderFeed();
     if (state.view === "article" && state.articleCache) renderArticle(state.articleCache);
     if (state.coinDrawer) {
@@ -396,6 +398,7 @@
     }
     if (state.view === "article" && state.articleCache) renderArticle(state.articleCache);
     if (window.BTC007_KOL) window.BTC007_KOL.rerender();
+    if (window.BTC007_TRADERS) window.BTC007_TRADERS.rerender();
     updateNewChip();
     updateLivePill();
     updateClock();
@@ -679,17 +682,26 @@
     return state.channel === KOL_CHANNEL;
   }
 
+  function isTraderChannel() {
+    return state.channel === TRADER_CHANNEL;
+  }
+
   function syncKol() {
     const on = state.view === "feed" && isKolChannel();
     document.body.dataset.kol = on ? "1" : "";
     const box = $("kol-view");
     if (box) box.hidden = !on;
     if (window.BTC007_KOL) window.BTC007_KOL.setActive(on);
+    const tOn = state.view === "feed" && isTraderChannel();
+    document.body.dataset.trader = tOn ? "1" : "";
+    const tBox = $("trader-view");
+    if (tBox) tBox.hidden = !tOn;
+    if (window.BTC007_TRADERS) window.BTC007_TRADERS.setActive(tOn);
   }
 
   async function pollNews() {
     if (document.hidden) return;
-    if (isKolChannel()) return;
+    if (isKolChannel() || isTraderChannel()) return;
     if (Date.now() < state.newsPauseUntil) return;
     try {
       const res = await fetchNewsPath(`/news?${newsParams()}`);
@@ -907,7 +919,7 @@
     state.hasMore = true;
     updateNewChip();
     $("feed").innerHTML = `<div class="empty"><p>${esc(t("loading"))}</p></div>`;
-    if (isKolChannel()) return;
+    if (isKolChannel() || isTraderChannel()) return;
     if (refetch) pollNews();
   }
 

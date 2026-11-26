@@ -2100,7 +2100,10 @@ html[data-theme="light"] .feed-heading { color: var(--text-faint); }
    ------------------------------------------------------------------ */
 body[data-kol="1"] #feed,
 body[data-kol="1"] #feed-status,
-body[data-kol="1"] #feed-sentinel { display: none !important; }
+body[data-kol="1"] #feed-sentinel,
+body[data-trader="1"] #feed,
+body[data-trader="1"] #feed-status,
+body[data-trader="1"] #feed-sentinel { display: none !important; }
 
 /* kol-trading channel: news-style list, one compact row per trader. */
 .kol-view {
@@ -2372,3 +2375,17 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
   .kol-cadence-note { font-size: 0.68rem; }
   .kol-status { white-space: nowrap; }
 }
+
+/* trader-leaderboard (Hyperliquid): address chip and the collapsed fill history. */
+.tr-addr { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82em; color: var(--text-faint); font-weight: 500; }
+.kol-history { margin-top: 10px; }
+.kol-history > summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.kol-history > summary::-webkit-details-marker { display: none; }
+.kol-history > summary::after { content: "▾"; font-size: 0.8em; transition: transform 0.15s; }
+.kol-history[open] > summary::after { transform: rotate(180deg); }
+.kol-history > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kol-history .kol-history-list { margin-top: 8px; }
