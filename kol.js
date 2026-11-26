@@ -17,12 +17,33 @@
       x: "thankUcrypto",
       url: "https://www.binance.com/en/copy-trading/lead-details/5075281354358777856",
       pinned: true
-    }
+    },
+    // After the pin, traders are listed by descending 90D lead PnL (research snapshot).
+    { key: "yunzhi", source: "binance", portfolioId: "5323669014384329216", name: "云沚",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5323669014384329216" },
+    { key: "bran-brandon", source: "binance", portfolioId: "5126298543040831233", name: "Bran Brandon",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5126298543040831233" },
+    { key: "jason007", source: "binance", portfolioId: "5133452281665177088", name: "踢倒丹炉Jason007",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5133452281665177088" },
+    { key: "xiaoxiao-tangying", source: "binance", portfolioId: "4286775714676474369", name: "小小的躺赢",
+      url: "https://www.binance.com/en/copy-trading/lead-details/4286775714676474369" },
+    { key: "shayu", source: "binance", portfolioId: "5191019069362573825", name: "鲨鱼先生",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5191019069362573825" },
+    { key: "guitu-sairun", source: "binance", portfolioId: "4635972047552772865", name: "龟兔赛跑985-稳健型",
+      url: "https://www.binance.com/en/copy-trading/lead-details/4635972047552772865" },
+    { key: "nengzoudao", source: "binance", portfolioId: "5236689487243483392", name: "能走到对岸吗_",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5236689487243483392" },
+    { key: "longgomi", source: "binance", portfolioId: "4954034225308534017", name: "龙够米",
+      url: "https://www.binance.com/en/copy-trading/lead-details/4954034225308534017" },
+    { key: "zhao-xiansen", source: "binance", portfolioId: "5327204477216755200", name: "zhao先森",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5327204477216755200" },
+    { key: "ziyou-zhongzai", source: "binance", portfolioId: "5304286558448176640", name: "自由终在眼前",
+      url: "https://www.binance.com/en/copy-trading/lead-details/5304286558448176640" }
   ];
 
-  const FEED_URL = "./.herenow/data/kol_feed?limit=20";
+  const FEED_URL = "./.herenow/data/kol_feed?limit=30";
   const POLL_MS = 3000;
-  const STALE_MS = 30000;
+  const STALE_MS = 90000;
   const RATE_BACKOFF_MS = 10000;
   const MAX_BACKOFF_MS = 30000;
   const MAX_ROWS = 60;
@@ -32,7 +53,7 @@
     zh: {
       stale: "数据源延迟，上次成功读取币安在 {s} 秒前", not_ready: "数据源尚未就绪",
       title: "KOL 带单监控",
-      note: "数据来自币安合约公开带单（Binance Copy Trading）的公开接口，由本站服务器约每 2 秒读取一次，网页每 3 秒刷新，通常比交易员实际下单晚几秒。仅供参考，不构成投资建议。",
+      note: "数据来自币安合约公开带单（Binance Copy Trading）的公开接口，由本站服务器读取。置顶交易员的订单大约每 7 秒更新一次，其他交易员大约每 35 秒一次，网页每 3 秒刷新。通常比实际下单晚若干秒。仅供参考，不构成投资建议。",
       live: "实时", connecting: "连接中", paused: "已暂停", backoff: "被限流，{s} 秒后重试", error: "暂时取不到数据，正在重试",
       updated: "{s} 秒前更新", updated_min: "{m} 分钟前更新", never: "尚未更新",
       aum: "管理规模", balance: "带单余额", copiers: "跟单人数", share: "分润比例", full: "已满员",
@@ -43,12 +64,16 @@
       long: "多", short: "空", size: "仓位", entry: "开仓价", mark: "标记价", upnl: "未实现盈亏", lev: "杠杆",
       is_new: "新", times_in: "时间为 {z}", copy_status_paused: "已暂停带单",
       history_show: "查看历史记录 ({n})", history_hide: "收起",
-      positions_summary: "当前持仓：{s}", positions_n: "{n} 笔", pinned: "置顶"
+      positions_summary: "当前持仓：{s}", positions_n: "{n} 笔", pinned: "置顶",
+      perp: "永续", side_long: "做多", side_short: "做空",
+      sentence_open: "以 {price} 的价格开启 {symbol} {perp} 的{side}仓位，数量为 {qty}{base}，总价值为 {value}USDT。",
+      sentence_close: "以 {price} 的价格平仓 {symbol} {perp} 的{side}仓位，数量为 {qty}{base}，总价值为 {value}USDT。",
+      sentence_pnl: "已实现盈亏为 {pnl}USDT。"
     },
     en: {
       stale: "Source delayed, last read from Binance {s}s ago", not_ready: "Data source not ready yet",
       title: "KOL trade monitor",
-      note: "Data comes from Binance Futures public copy trading pages. Our server reads them about every 2 seconds and this page refreshes every 3 seconds, so it usually lags the trader by a few seconds. For information only, not investment advice.",
+      note: "Data comes from Binance Futures public copy trading pages. Our server polls the pinned trader’s orders about every 7 seconds and the others about every 35 seconds; this page refreshes every 3 seconds, so it usually lags by several seconds. For information only, not investment advice.",
       live: "Live", connecting: "Connecting", paused: "Paused", backoff: "Rate limited, retrying in {s}s", error: "Can’t reach the data right now, retrying",
       updated: "Updated {s}s ago", updated_min: "Updated {m} min ago", never: "Not updated yet",
       aum: "AUM", balance: "Lead balance", copiers: "Copiers", share: "Profit share", full: "Full",
@@ -59,12 +84,16 @@
       long: "Long", short: "Short", size: "Size", entry: "Entry", mark: "Mark", upnl: "Unrealized PnL", lev: "Leverage",
       is_new: "New", times_in: "Times in {z}", copy_status_paused: "Lead paused",
       history_show: "View history ({n})", history_hide: "Hide",
-      positions_summary: "Open positions: {s}", positions_n: "{n}", pinned: "Pinned"
+      positions_summary: "Open positions: {s}", positions_n: "{n}", pinned: "Pinned",
+      perp: "Perpetual", side_long: "long", side_short: "short",
+      sentence_open: "Opened a {side} position on {symbol} {perp} at {price}, quantity {qty} {base}, total value {value}USDT.",
+      sentence_close: "Closed a {side} position on {symbol} {perp} at {price}, quantity {qty} {base}, total value {value}USDT.",
+      sentence_pnl: "Realized PnL {pnl}USDT."
     },
     ko: {
       stale: "데이터 소스 지연, 마지막 바이낸스 조회 {s}초 전", not_ready: "데이터 소스 준비 중",
       title: "KOL 거래 모니터",
-      note: "데이터는 바이낸스 선물 공개 카피트레이딩 페이지에서 가져옵니다. 서버가 약 2초마다 읽고 페이지는 3초마다 새로고침하므로 보통 실제 주문보다 몇 초 늦습니다. 참고용이며 투자 조언이 아닙니다.",
+      note: "데이터는 바이낸스 선물 공개 카피트레이딩 페이지에서 가져옵니다. 서버는 고정 트레이더의 주문을 약 7초마다, 다른 트레이더는 약 35초마다 읽고, 페이지는 3초마다 새로고침하므로 보통 실제 주문보다 수 초 늦습니다. 참고용이며 투자 조언이 아닙니다.",
       live: "실시간", connecting: "연결 중", paused: "일시 중지", backoff: "요청 제한, {s}초 후 재시도", error: "데이터를 가져올 수 없어 재시도 중",
       updated: "{s}초 전 업데이트", updated_min: "{m}분 전 업데이트", never: "아직 업데이트 없음",
       aum: "운용 규모", balance: "리드 잔고", copiers: "카피 인원", share: "수익 배분", full: "정원 마감",
@@ -75,12 +104,16 @@
       long: "롱", short: "숏", size: "규모", entry: "진입가", mark: "마크가", upnl: "미실현 손익", lev: "레버리지",
       is_new: "신규", times_in: "시간대 {z}", copy_status_paused: "리드 일시 중지",
       history_show: "거래 기록 보기 ({n})", history_hide: "접기",
-      positions_summary: "현재 포지션: {s}", positions_n: "{n}건", pinned: "고정"
+      positions_summary: "현재 포지션: {s}", positions_n: "{n}건", pinned: "고정",
+      perp: "무기한", side_long: "롱", side_short: "숏",
+      sentence_open: "{price}의 가격으로 {symbol} {perp} {side} 포지션을 열었습니다. 수량은 {qty}{base}, 총 가치는 {value}USDT입니다.",
+      sentence_close: "{price}의 가격으로 {symbol} {perp} {side} 포지션을 청산했습니다. 수량은 {qty}{base}, 총 가치는 {value}USDT입니다.",
+      sentence_pnl: "실현 손익은 {pnl}USDT입니다."
     },
     tr: {
       stale: "Kaynak gecikmeli, Binance'ten son okuma {s} sn önce", not_ready: "Veri kaynağı henüz hazır değil",
       title: "KOL işlem takibi",
-      note: "Veriler Binance Vadeli herkese açık kopya işlem sayfalarından gelir. Sunucumuz verileri yaklaşık 2 saniyede bir okur, sayfa 3 saniyede bir yenilenir; bu yüzden genellikle işlemciden birkaç saniye geride kalır. Yalnızca bilgi amaçlıdır, yatırım tavsiyesi değildir.",
+      note: "Veriler Binance Vadeli herkese açık kopya işlem sayfalarından gelir. Sunucumuz sabitlenen işlemcinin emirlerini yaklaşık 7 saniyede bir, diğerlerini yaklaşık 35 saniyede bir okur; sayfa 3 saniyede bir yenilenir, bu yüzden genellikle birkaç saniye geride kalır. Yalnızca bilgi amaçlıdır, yatırım tavsiyesi değildir.",
       live: "Canlı", connecting: "Bağlanıyor", paused: "Duraklatıldı", backoff: "Hız sınırı, {s} sn sonra yeniden denenecek", error: "Veriye şu an ulaşılamıyor, yeniden deneniyor",
       updated: "{s} sn önce güncellendi", updated_min: "{m} dk önce güncellendi", never: "Henüz güncellenmedi",
       aum: "Yönetilen varlık", balance: "Lider bakiyesi", copiers: "Kopyalayanlar", share: "Kâr payı", full: "Dolu",
@@ -91,12 +124,16 @@
       long: "Long", short: "Short", size: "Büyüklük", entry: "Giriş", mark: "İşaret", upnl: "Gerçekleşmemiş K/Z", lev: "Kaldıraç",
       is_new: "Yeni", times_in: "Saatler {z}", copy_status_paused: "Liderlik duraklatıldı",
       history_show: "Geçmişi gör ({n})", history_hide: "Gizle",
-      positions_summary: "Açık pozisyonlar: {s}", positions_n: "{n}", pinned: "Sabit"
+      positions_summary: "Açık pozisyonlar: {s}", positions_n: "{n}", pinned: "Sabit",
+      perp: "Perpetual", side_long: "long", side_short: "short",
+      sentence_open: "{symbol} {perp} {side} pozisyonu {price} fiyatından açıldı, miktar {qty} {base}, toplam değer {value}USDT.",
+      sentence_close: "{symbol} {perp} {side} pozisyonu {price} fiyatından kapatıldı, miktar {qty} {base}, toplam değer {value}USDT.",
+      sentence_pnl: "Gerçekleşen K/Z {pnl}USDT."
     },
     ru: {
       stale: "Источник задерживается, последнее чтение Binance {s} с назад", not_ready: "Источник данных ещё не готов",
       title: "Мониторинг сделок KOL",
-      note: "Данные взяты с публичных страниц копи-трейдинга Binance Futures. Наш сервер читает их примерно каждые 2 секунды, страница обновляется каждые 3 секунды, поэтому обычно отстаёт от трейдера на несколько секунд. Только для информации, не инвестиционный совет.",
+      note: "Данные взяты с публичных страниц копи-трейдинга Binance Futures. Наш сервер обновляет ордера закреплённого трейдера примерно каждые 7 секунд, остальных — примерно каждые 35 секунд; страница обновляется каждые 3 секунды, поэтому обычно отстаёт на несколько секунд. Только для информации, не инвестиционный совет.",
       live: "В эфире", connecting: "Подключение", paused: "Пауза", backoff: "Лимит запросов, повтор через {s} с", error: "Данные сейчас недоступны, повторяем",
       updated: "Обновлено {s} с назад", updated_min: "Обновлено {m} мин назад", never: "Ещё не обновлялось",
       aum: "Под управлением", balance: "Баланс лидера", copiers: "Копировщики", share: "Доля прибыли", full: "Мест нет",
@@ -107,7 +144,11 @@
       long: "Лонг", short: "Шорт", size: "Размер", entry: "Вход", mark: "Маркировка", upnl: "Нереализ. PnL", lev: "Плечо",
       is_new: "Новое", times_in: "Время: {z}", copy_status_paused: "Ведение приостановлено",
       history_show: "История ({n})", history_hide: "Скрыть",
-      positions_summary: "Открытые позиции: {s}", positions_n: "{n}", pinned: "Закреплён"
+      positions_summary: "Открытые позиции: {s}", positions_n: "{n}", pinned: "Закреплён",
+      perp: "бессрочный", side_long: "лонг", side_short: "шорт",
+      sentence_open: "Открыта {side} позиция по {symbol} {perp} по цене {price}, количество {qty} {base}, общая стоимость {value}USDT.",
+      sentence_close: "Закрыта {side} позиция по {symbol} {perp} по цене {price}, количество {qty} {base}, общая стоимость {value}USDT.",
+      sentence_pnl: "Реализованный PnL {pnl}USDT."
     }
   };
 
@@ -183,7 +224,119 @@
     return side === "BUY" ? "buy" : "sell";
   }
   const isClose = (a) => a === "close_long" || a === "close_short";
+  const isLongAction = (a) => a === "open_long" || a === "close_long";
   const orderKey = (o) => [o.orderTime, o.symbol, o.side, o.positionSide, o.executedQty, o.avgPrice].join("|");
+
+  /* Show API digits as given, only adding thousands separators. Do not round or pad. */
+  function exactStr(v) {
+    if (v == null || v === "") return null;
+    if (typeof v === "string") {
+      const s = v.trim();
+      if (!s || !Number.isFinite(Number(s))) return null;
+      return s;
+    }
+    if (typeof v === "number" && Number.isFinite(v)) {
+      let s = String(v);
+      if (/[eE]/.test(s)) s = v.toFixed(15).replace(/\.?0+$/, "");
+      return s;
+    }
+    return null;
+  }
+  function withSep(s) {
+    const m = String(s).match(/^([+-]?)(\d+)(?:\.(\d+))?$/);
+    if (!m) return String(s);
+    return m[1] + m[2].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (m[3] != null ? "." + m[3] : "");
+  }
+  function mulExact(a, b) {
+    const sa = exactStr(a), sb = exactStr(b);
+    if (sa == null || sb == null) return null;
+    const sign = (sa[0] === "-" ? -1 : 1) * (sb[0] === "-" ? -1 : 1);
+    const na = sa.replace("-", ""), nb = sb.replace("-", "");
+    const pa = (na.split(".")[1] || "").length, pb = (nb.split(".")[1] || "").length;
+    const ia = BigInt(na.replace(".", "")), ib = BigInt(nb.replace(".", ""));
+    let prod = (ia * ib).toString();
+    const scale = pa + pb;
+    if (scale > 0) {
+      prod = prod.padStart(scale + 1, "0");
+      prod = prod.slice(0, prod.length - scale) + "." + prod.slice(prod.length - scale);
+      prod = prod.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
+    }
+    prod = prod.replace(/^0+(?=\d)/, "");
+    return (sign < 0 ? "-" : "") + prod;
+  }
+  function baseOf(o) {
+    if (typeof o.baseAsset === "string" && o.baseAsset.trim()) return o.baseAsset.trim();
+    const sym = String(o.symbol || "");
+    const m = sym.match(/^(.*)(USDT|USDC|BUSD|FDUSD|TUSD|USD)$/i);
+    return m ? m[1] : "";
+  }
+  function fmtStamp(ts) {
+    const n = num(ts);
+    if (!n) return "—";
+    try {
+      const parts = {};
+      for (const p of new Intl.DateTimeFormat("en-US", {
+        timeZone: tz(), year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+      }).formatToParts(new Date(n))) {
+        if (p.type !== "literal") parts[p.type] = p.value;
+      }
+      return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
+    } catch {
+      const d = new Date(n);
+      const p = (x) => String(x).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+  }
+  function sideClass(a) {
+    if (a === "open_long") return "is-open-long";
+    if (a === "close_long") return "is-close-long";
+    if (a === "open_short") return "is-open-short";
+    if (a === "close_short") return "is-close-short";
+    return String(a).startsWith("close") || a === "sell" ? "is-close-short" : "is-open-long";
+  }
+  function symbolHref(sym) {
+    return `https://www.binance.com/${lang() === "zh" ? "zh-CN" : "en"}/futures/${encodeURIComponent(sym)}`;
+  }
+  function symbolHtml(sym) {
+    const s = String(sym || "").trim() || "—";
+    return `<a class="kol-sym" href="${esc(symbolHref(s))}" target="_blank" rel="noopener noreferrer">${esc(s)}</a>`;
+  }
+  function sentenceHtml(o) {
+    const a = actionOf(o);
+    const price = exactStr(o.avgPrice);
+    const qty = exactStr(o.executedQty);
+    const value = price != null && qty != null ? mulExact(price, qty) : null;
+    const base = baseOf(o);
+    const long = isLongAction(a) || (a !== "open_short" && a !== "close_short" && a !== "sell" && String(o.positionSide || "").toUpperCase() !== "SHORT");
+    const closing = isClose(a);
+    const vars = {
+      price: price != null ? withSep(price) : "—",
+      symbol: "\u0001",
+      perp: t("perp"),
+      side: t(long ? "side_long" : "side_short"),
+      qty: qty != null ? withSep(qty) : "—",
+      base: base || "",
+      value: value != null ? withSep(value) : "—"
+    };
+    let text = t(closing ? "sentence_close" : "sentence_open", vars);
+    const pnl = exactStr(o.totalPnl);
+    if (closing && pnl != null) text = text + (/[。！？]$/.test(text) ? "" : " ") + t("sentence_pnl", { pnl: withSep(pnl) });
+    return esc(text).replace("\u0001", symbolHtml(o.symbol));
+  }
+  function orderBlock(s, o, now) {
+    const k = orderKey(o);
+    const a = actionOf(o);
+    const isNew = (s.newUntil.get(k) || 0) > now;
+    return `<div class="kol-order-line${isNew ? " is-new" : ""}" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
+      <div class="kol-latest-meta">
+        <span class="kol-time">${esc(fmtStamp(o.orderTime))}</span>
+        <span class="kol-side ${sideClass(a)}">${esc(t(a))}</span>
+        ${isNew ? `<span class="kol-new">${esc(t("is_new"))}</span>` : ""}
+      </div>
+      <p class="kol-sentence">${sentenceHtml(o)}</p>
+    </div>`;
+  }
 
   /* Pinned traders always precede everyone else. Optional tieBreak (e.g. profit or
      max drawdown) only runs among unpinned traders, or among pinned ones. */
@@ -248,7 +401,7 @@
     s.detail = snap.detail || null;
     s.positions = Array.isArray(snap.positions) ? snap.positions : null;
     const key = s.cfg.key;
-    if (detailChanged) renderHead(key);
+    if (detailChanged) { renderHead(key); renderDetail(key); }
     if (posChanged) renderPositions(key);
     if (ordersChanged) renderOrders(key);
   }
@@ -355,7 +508,7 @@
     const box = root();
     if (!box) return;
     const now = Date.now();
-    box.querySelectorAll(".kol-order.is-new").forEach((row) => {
+    box.querySelectorAll(".kol-order-line.is-new").forEach((row) => {
       const key = row.getAttribute("data-kol");
       const s = key && st(key);
       const until = s && s.newUntil.get(row.getAttribute("data-key"));
@@ -412,31 +565,7 @@
     return bits.join(" · ") + (rows.length > 3 ? more : "");
   }
 
-  function orderRow(s, o, now, { head = false } = {}) {
-    if (head) {
-      return `<div class="kol-order kol-order-head" aria-hidden="true">
-      <span class="c-time">${esc(t("time"))}</span><span class="c-sym">${esc(t("symbol"))}</span><span class="c-act">${esc(t("action"))}</span>
-      <span class="c-num c-price">${esc(t("price"))}</span><span class="c-num c-qty">${esc(t("qty"))}</span><span class="c-num c-notional">${esc(t("notional"))}</span><span class="c-num c-pnl">${esc(t("pnl"))}</span>
-    </div>`;
-    }
-    const k = orderKey(o);
-    const a = actionOf(o);
-    const isNew = (s.newUntil.get(k) || 0) > now;
-    const price = num(o.avgPrice);
-    const qty = num(o.executedQty);
-    const notional = price != null && qty != null ? price * qty : null;
-    const buy = String(o.side || "").toUpperCase() === "BUY";
-    const pnl = isClose(a) ? o.totalPnl : null;
-    return `<div class="kol-order${isNew ? " is-new" : ""}" role="listitem" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
-        <span class="c-time">${esc(fmtTime(o.orderTime))}${isNew ? ` <span class="kol-new">${esc(t("is_new"))}</span>` : ""}</span>
-        <span class="c-sym">${esc(o.symbol || "—")}</span>
-        <span class="c-act"><span class="kol-side ${buy ? "is-buy" : "is-sell"}">${esc(t(a))}</span></span>
-        <span class="c-num c-price" data-label="${esc(t("price"))}">${esc(fmtPrice(price))}</span>
-        <span class="c-num c-qty" data-label="${esc(t("qty"))}">${esc(fmtNum(qty))}</span>
-        <span class="c-num c-notional" data-label="${esc(t("notional"))}">${esc(fmtUsdt(notional))}</span>
-        <span class="c-num c-pnl ${pnl != null ? pnlClass(pnl) : ""}" data-label="${esc(t("pnl"))}">${pnl != null ? esc(fmtPnl(pnl)) : "—"}</span>
-      </div>`;
-  }
+  function orderRow() { /* replaced by orderBlock */ return ""; }
 
   function renderHead(key) {
     const el = cardEl(key);
@@ -447,24 +576,31 @@
     const d = s.detail || {};
     const avatar = typeof d.avatarUrl === "string" && /^https:\/\//.test(d.avatarUrl) ? d.avatarUrl : "";
     const initial = (d.nickname || c.name).trim().slice(0, 1) || "?";
+    head.innerHTML = `
+      <span class="kol-avatar" data-initial="${esc(initial)}">
+        <span class="kol-avatar-fallback" aria-hidden="true">${esc(initial)}</span>
+        ${avatar ? `<img src="${esc(avatar)}" alt="" width="28" height="28" loading="lazy" referrerpolicy="no-referrer" data-kol-avatar>` : ""}
+      </span>
+      <span class="kol-name">${esc(d.nickname || c.name)}${c.pinned ? ` <span class="kol-tag kol-pin-tag">${esc(t("pinned"))}</span>` : ""}${d.isPaused ? ` <span class="kol-tag">${esc(t("copy_status_paused"))}</span>` : ""}</span>`;
+    bindAvatars(head);
+  }
+
+  function renderDetail(key) {
+    const el = cardEl(key);
+    const box = el && el.querySelector("[data-kol-profile]");
+    if (!box) return;
+    const s = st(key);
+    const c = s.cfg;
+    const d = s.detail || {};
     const cur = num(d.currentCopyCount);
     const max = num(d.maxCopyCount);
     const full = cur != null && max != null && max > 0 && cur >= max;
     const stat = (label, value, extra = "") => `<div class="kol-stat"><span class="k">${esc(label)}</span><span class="v">${value}${extra}</span></div>`;
     const bio = typeof d.description === "string" ? d.description.trim() : "";
-    head.innerHTML = `
-      <div class="kol-id">
-        <span class="kol-avatar" data-initial="${esc(initial)}">
-          <span class="kol-avatar-fallback" aria-hidden="true">${esc(initial)}</span>
-          ${avatar ? `<img src="${esc(avatar)}" alt="" width="40" height="40" loading="lazy" referrerpolicy="no-referrer" data-kol-avatar>` : ""}
-        </span>
-        <div class="kol-id-text">
-          <div class="kol-name">${esc(d.nickname || c.name)}${c.pinned ? ` <span class="kol-tag kol-pin-tag">${esc(t("pinned"))}</span>` : ""}${d.isPaused ? ` <span class="kol-tag">${esc(t("copy_status_paused"))}</span>` : ""}</div>
-          <div class="kol-links">
-            <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(t("binance_page"))} ↗</a>
-            ${c.x ? `<a href="https://x.com/${encodeURIComponent(c.x)}" target="_blank" rel="noopener noreferrer">@${esc(c.x)}</a>` : ""}
-          </div>
-        </div>
+    box.innerHTML = `
+      <div class="kol-links">
+        <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(t("binance_page"))} ↗</a>
+        ${c.x ? `<a href="https://x.com/${encodeURIComponent(c.x)}" target="_blank" rel="noopener noreferrer">@${esc(c.x)}</a>` : ""}
       </div>
       ${bio ? `<p class="kol-bio" title="${esc(bio)}">${esc(bio)}</p>` : ""}
       ${s.detail ? `<div class="kol-stats">
@@ -473,7 +609,6 @@
         ${stat(t("copiers"), cur != null ? `${esc(fmtNum(cur, 0))}${max != null ? ` / ${esc(fmtNum(max, 0))}` : ""}` : "—", full ? ` <span class="kol-tag">${esc(t("full"))}</span>` : "")}
         ${stat(t("share"), num(d.profitSharingRate) != null ? `${esc(fmtNum(d.profitSharingRate, 2))}%` : "—")}
       </div>` : `<p class="kol-muted">${esc(feed.status === "error" ? t("load_failed") : t("loading"))}</p>`}`;
-    bindAvatars(head);
   }
 
   function renderPositions(key) {
@@ -498,7 +633,7 @@
       const upnl = p.unrealizedProfit != null ? p.unrealizedProfit : p.unRealizedProfit;
       const lev = num(p.leverage);
       return `<div class="kol-pos">
-        <div class="kol-pos-sym"><b>${esc(p.symbol || "—")}</b> <span class="kol-side ${long ? "is-buy" : "is-sell"}">${esc(t(long ? "long" : "short"))}${lev ? ` ${esc(fmtNum(lev, 0))}x` : ""}</span></div>
+        <div class="kol-pos-sym"><b>${esc(p.symbol || "—")}</b> <span class="kol-side ${long ? "is-open-long" : "is-open-short"}">${esc(t(long ? "long" : "short"))}${lev ? ` ${esc(fmtNum(lev, 0))}x` : ""}</span></div>
         <div><span class="k">${esc(t("size"))}</span><span class="v">${esc(fmtNum(Math.abs(amt)))}</span></div>
         <div><span class="k">${esc(t("entry"))}</span><span class="v">${esc(fmtPrice(p.entryPrice))}</span></div>
         <div><span class="k">${esc(t("mark"))}</span><span class="v">${esc(fmtPrice(p.markPrice))}</span></div>
@@ -507,25 +642,15 @@
     }).join("")}</div>`;
   }
 
-  function historyCount(s) {
-    return Math.max(0, s.orders.length - 1);
-  }
-
   function syncExpand(key) {
     const el = cardEl(key);
     if (!el) return;
     const open = expanded.has(key);
     el.classList.toggle("is-expanded", open);
-    const hist = el.querySelector("[data-kol-history]");
-    if (hist) hist.hidden = !open;
-    const btn = el.querySelector("[data-kol-toggle]");
-    const s = st(key);
-    const n = historyCount(s);
-    if (btn) {
-      btn.hidden = n < 1;
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-      btn.textContent = open ? t("history_hide") : t("history_show", { n });
-    }
+    const detail = el.querySelector("[data-kol-detail]");
+    if (detail) detail.hidden = !open;
+    const btn = el.querySelector("[data-kol-expand]");
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
   function renderOrders(key) {
@@ -550,15 +675,16 @@
     const now = Date.now();
     const first = s.orders[0];
     const rest = s.orders.slice(1);
-    latest.innerHTML = `<div class="kol-orders kol-orders-latest" role="list">${orderRow(s, null, now, { head: true })}${orderRow(s, first, now)}</div>`;
+    latest.innerHTML = orderBlock(s, first, now);
     histOrders.innerHTML = rest.length
-      ? `<h3 class="kol-sub">${esc(t("orders"))}</h3><div class="kol-orders" role="list">${orderRow(s, null, now, { head: true })}${rest.map((o) => orderRow(s, o, now)).join("")}</div>`
+      ? `<h3 class="kol-sub">${esc(t("orders"))}</h3><div class="kol-history-list">${rest.map((o) => orderBlock(s, o, now)).join("")}</div>`
       : "";
     syncExpand(key);
   }
 
   function renderKol(key) {
     renderHead(key);
+    renderDetail(key);
     renderPositions(key);
     renderOrders(key);
   }
@@ -577,13 +703,15 @@
         </span>
       </div>
       <p class="kol-zone" data-kol-zone></p>
-      <div class="kol-grid" data-kol-grid>
-        ${visibleKols().map((c) => `<article class="kol-card${c.pinned ? " is-pinned" : ""}" data-kol-card="${esc(c.key)}">
-          <div data-kol-head></div>
-          <div data-kol-pos-line></div>
-          <div data-kol-latest></div>
-          <button type="button" class="kol-toggle" data-kol-toggle="${esc(c.key)}" aria-controls="kol-hist-${esc(c.key)}" aria-expanded="false" hidden></button>
-          <div class="kol-history" id="kol-hist-${esc(c.key)}" data-kol-history hidden>
+      <div class="kol-list" data-kol-grid>
+        ${visibleKols().map((c) => `<article class="kol-row${c.pinned ? " is-pinned" : ""}" data-kol-card="${esc(c.key)}">
+          <div class="kol-row-main" data-kol-expand="${esc(c.key)}" role="button" tabindex="0" aria-expanded="false" aria-controls="kol-detail-${esc(c.key)}">
+            <div class="kol-id-line" data-kol-head></div>
+            <div data-kol-latest></div>
+          </div>
+          <div class="kol-detail" id="kol-detail-${esc(c.key)}" data-kol-detail hidden>
+            <div data-kol-profile></div>
+            <div data-kol-pos-line></div>
             <div data-kol-positions hidden></div>
             <div data-kol-hist-orders></div>
           </div>
@@ -595,13 +723,22 @@
   }
 
   function onClick(e) {
-    const b = e.target.closest("[data-kol-toggle]");
+    if (e.target.closest("a")) return;
+    const b = e.target.closest("[data-kol-expand]");
     if (!b) return;
-    const k = b.getAttribute("data-kol-toggle");
+    const k = b.getAttribute("data-kol-expand");
     if (!kols.has(k)) return;
     if (expanded.has(k)) expanded.delete(k);
     else expanded.add(k);
     syncExpand(k);
+  }
+
+  function onKey(e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const b = e.target.closest("[data-kol-expand]");
+    if (!b) return;
+    e.preventDefault();
+    onClick(e);
   }
 
   function setActive(on) {
@@ -609,7 +746,10 @@
     if (on && !built) {
       build();
       const box = root();
-      if (box) box.addEventListener("click", onClick);
+      if (box) {
+        box.addEventListener("click", onClick);
+        box.addEventListener("keydown", onKey);
+      }
     }
     if (on === active) return;
     active = on;
