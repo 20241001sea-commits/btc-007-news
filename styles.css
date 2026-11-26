@@ -2102,6 +2102,8 @@ body[data-kol="1"] #feed,
 body[data-kol="1"] #feed-status,
 body[data-kol="1"] #feed-sentinel { display: none !important; }
 
+/* kol-trading channel: compact grid of trader cards (~10). Each card is its
+   own container so order/stats layout follows card width, not the page. */
 .kol-view {
   container-type: inline-size;
   display: flex;
@@ -2111,7 +2113,6 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
   font-size: clamp(0.78rem, 0.74rem + 0.2vw, 0.9rem);
 }
 .kol-view[hidden] { display: none; }
-.kol-picker { display: flex; gap: 6px; flex-wrap: wrap; }
 .kol-head {
   display: flex;
   align-items: center;
@@ -2150,36 +2151,58 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
 .kol-status[data-state="error"] { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
 .kol-status[data-state="error"] .kol-dot { background: var(--danger); }
 
-.kol-card,
-.kol-block {
+.kol-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: clamp(10px, 1.2vw, 14px);
+  align-items: start;
+}
+.kol-card {
+  container-type: inline-size;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: clamp(10px, 1.2vw, 16px);
+  padding: clamp(10px, 1vw, 14px);
+  min-width: 0;
 }
-.kol-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.kol-id { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .kol-avatar {
-  width: 44px; height: 44px; flex: none;
+  position: relative;
+  width: 40px; height: 40px; flex: none;
   border-radius: 50%;
   overflow: hidden;
   display: grid; place-items: center;
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
-.kol-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.kol-avatar-fallback { line-height: 1; }
+.kol-avatar img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+  opacity: 0;
+}
+.kol-avatar.has-img img { opacity: 1; }
+.kol-avatar.has-img .kol-avatar-fallback { display: none; }
 .kol-id-text { min-width: 0; }
 .kol-name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1rem, 0.92rem + 0.45vw, 1.25rem);
+  font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.12rem);
   color: var(--text);
 }
 .kol-links { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; font-size: 0.82em; }
 .kol-links a { color: var(--accent); text-decoration: none; }
 .kol-links a:hover { text-decoration: underline; }
-.kol-bio { margin: 10px 0 0; color: var(--text-dim); white-space: pre-line; overflow-wrap: anywhere; }
+.kol-bio {
+  margin: 8px 0 0;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .kol-tag {
   display: inline-block;
   padding: 1px 6px;
@@ -2191,17 +2214,20 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
   background: var(--sand-soft);
   vertical-align: middle;
 }
+.kol-pin-tag {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
 .kol-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px 8px;
+  margin-top: 10px;
 }
 .kol-stat, .kol-pos > div:not(.kol-pos-sym) { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kol-stat .k, .kol-pos .k { font-size: 0.74em; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; }
 .kol-stat .v, .kol-pos .v { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 
-.kol-sub-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .kol-sub {
   margin: 0 0 8px;
   font-size: 0.72rem;
@@ -2210,9 +2236,17 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
   text-transform: uppercase;
   color: var(--text-faint);
 }
-.kol-zone { font-size: 0.72rem; color: var(--text-faint); }
+.kol-zone { margin: -6px 0 0; font-size: 0.72rem; color: var(--text-faint); }
 .kol-muted { margin: 4px 0; color: var(--text-faint); }
 .kol-note { margin: 0; font-size: 0.78em; color: var(--text-faint); line-height: 1.5; }
+.kol-pos-line {
+  margin: 8px 0 6px;
+  color: var(--text-dim);
+  font-size: 0.86em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .kol-positions { display: flex; flex-direction: column; gap: 8px; }
 .kol-pos {
@@ -2269,6 +2303,31 @@ body[data-kol="1"] #feed-sentinel { display: none !important; }
   color: var(--bg);
   background: var(--accent);
 }
+.kol-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 6px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.86em;
+  cursor: pointer;
+}
+.kol-toggle:hover { text-decoration: underline; }
+.kol-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.kol-toggle[hidden] { display: none; }
+.kol-history {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kol-history[hidden] { display: none; }
 @keyframes kol-flash {
   from { background: color-mix(in srgb, var(--accent) 30%, transparent); }
   to { background: color-mix(in srgb, var(--accent) 8%, transparent); }

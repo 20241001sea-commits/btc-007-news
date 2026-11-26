@@ -2,7 +2,9 @@
    Binance blocks proxy requests from here.now, so a poller on our own box reads the public
    Binance copy-trading endpoints (~every 2s) and writes one snapshot per KOL into this site's
    here.now Site Data collection `kol_feed`. The page reads it same-origin every 3s while visible.
-   To add a trader: add it here and to KOLS in the poller (kol-trading-poller/poller.py). */
+   To add a trader: add it here and to KOLS in the poller (kol-trading-poller/poller.py).
+   Traders with `pinned: true` (熬鹰资本) always render first, ahead of any later profit or
+   drawdown sort, so new additions cannot displace them. */
 (() => {
   "use strict";
 
@@ -13,7 +15,8 @@
       portfolioId: "5075281354358777856",
       name: "熬鹰资本",
       x: "thankUcrypto",
-      url: "https://www.binance.com/en/copy-trading/lead-details/5075281354358777856"
+      url: "https://www.binance.com/en/copy-trading/lead-details/5075281354358777856",
+      pinned: true
     }
   ];
 
@@ -38,7 +41,9 @@
       time: "时间", symbol: "合约", action: "方向", price: "成交均价", qty: "数量", notional: "名义价值", pnl: "已实现盈亏",
       open_long: "开多", close_long: "平多", open_short: "开空", close_short: "平空", buy: "买入", sell: "卖出",
       long: "多", short: "空", size: "仓位", entry: "开仓价", mark: "标记价", upnl: "未实现盈亏", lev: "杠杆",
-      is_new: "新", times_in: "时间为 {z}", copy_status_paused: "已暂停带单"
+      is_new: "新", times_in: "时间为 {z}", copy_status_paused: "已暂停带单",
+      history_show: "查看历史记录 ({n})", history_hide: "收起",
+      positions_summary: "当前持仓：{s}", positions_n: "{n} 笔", pinned: "置顶"
     },
     en: {
       stale: "Source delayed, last read from Binance {s}s ago", not_ready: "Data source not ready yet",
@@ -52,7 +57,9 @@
       time: "Time", symbol: "Contract", action: "Side", price: "Avg price", qty: "Qty", notional: "Notional", pnl: "Realized PnL",
       open_long: "Open long", close_long: "Close long", open_short: "Open short", close_short: "Close short", buy: "Buy", sell: "Sell",
       long: "Long", short: "Short", size: "Size", entry: "Entry", mark: "Mark", upnl: "Unrealized PnL", lev: "Leverage",
-      is_new: "New", times_in: "Times in {z}", copy_status_paused: "Lead paused"
+      is_new: "New", times_in: "Times in {z}", copy_status_paused: "Lead paused",
+      history_show: "View history ({n})", history_hide: "Hide",
+      positions_summary: "Open positions: {s}", positions_n: "{n}", pinned: "Pinned"
     },
     ko: {
       stale: "데이터 소스 지연, 마지막 바이낸스 조회 {s}초 전", not_ready: "데이터 소스 준비 중",
@@ -66,7 +73,9 @@
       time: "시간", symbol: "계약", action: "방향", price: "평균가", qty: "수량", notional: "명목 가치", pnl: "실현 손익",
       open_long: "롱 진입", close_long: "롱 청산", open_short: "숏 진입", close_short: "숏 청산", buy: "매수", sell: "매도",
       long: "롱", short: "숏", size: "규모", entry: "진입가", mark: "마크가", upnl: "미실현 손익", lev: "레버리지",
-      is_new: "신규", times_in: "시간대 {z}", copy_status_paused: "리드 일시 중지"
+      is_new: "신규", times_in: "시간대 {z}", copy_status_paused: "리드 일시 중지",
+      history_show: "거래 기록 보기 ({n})", history_hide: "접기",
+      positions_summary: "현재 포지션: {s}", positions_n: "{n}건", pinned: "고정"
     },
     tr: {
       stale: "Kaynak gecikmeli, Binance'ten son okuma {s} sn önce", not_ready: "Veri kaynağı henüz hazır değil",
@@ -80,7 +89,9 @@
       time: "Zaman", symbol: "Kontrat", action: "Yön", price: "Ort. fiyat", qty: "Miktar", notional: "Nominal", pnl: "Gerçekleşen K/Z",
       open_long: "Long aç", close_long: "Long kapat", open_short: "Short aç", close_short: "Short kapat", buy: "Al", sell: "Sat",
       long: "Long", short: "Short", size: "Büyüklük", entry: "Giriş", mark: "İşaret", upnl: "Gerçekleşmemiş K/Z", lev: "Kaldıraç",
-      is_new: "Yeni", times_in: "Saatler {z}", copy_status_paused: "Liderlik duraklatıldı"
+      is_new: "Yeni", times_in: "Saatler {z}", copy_status_paused: "Liderlik duraklatıldı",
+      history_show: "Geçmişi gör ({n})", history_hide: "Gizle",
+      positions_summary: "Açık pozisyonlar: {s}", positions_n: "{n}", pinned: "Sabit"
     },
     ru: {
       stale: "Источник задерживается, последнее чтение Binance {s} с назад", not_ready: "Источник данных ещё не готов",
@@ -94,7 +105,9 @@
       time: "Время", symbol: "Контракт", action: "Сторона", price: "Ср. цена", qty: "Кол-во", notional: "Номинал", pnl: "Реализ. PnL",
       open_long: "Открыть лонг", close_long: "Закрыть лонг", open_short: "Открыть шорт", close_short: "Закрыть шорт", buy: "Покупка", sell: "Продажа",
       long: "Лонг", short: "Шорт", size: "Размер", entry: "Вход", mark: "Маркировка", upnl: "Нереализ. PnL", lev: "Плечо",
-      is_new: "Новое", times_in: "Время: {z}", copy_status_paused: "Ведение приостановлено"
+      is_new: "Новое", times_in: "Время: {z}", copy_status_paused: "Ведение приостановлено",
+      history_show: "История ({n})", history_hide: "Скрыть",
+      positions_summary: "Открытые позиции: {s}", positions_n: "{n}", pinned: "Закреплён"
     }
   };
 
@@ -172,6 +185,18 @@
   const isClose = (a) => a === "close_long" || a === "close_short";
   const orderKey = (o) => [o.orderTime, o.symbol, o.side, o.positionSide, o.executedQty, o.avgPrice].join("|");
 
+  /* Pinned traders always precede everyone else. Optional tieBreak (e.g. profit or
+     max drawdown) only runs among unpinned traders, or among pinned ones. */
+  function compareKols(a, b, tieBreak) {
+    const pa = a && a.pinned ? 0 : 1;
+    const pb = b && b.pinned ? 0 : 1;
+    if (pa !== pb) return pa - pb;
+    return tieBreak ? tieBreak(a, b) : 0;
+  }
+  function visibleKols() {
+    return KOL_LIST.slice().sort((a, b) => compareKols(a, b));
+  }
+
   const kols = new Map(KOL_LIST.map((k) => [k.key, {
     cfg: k,
     orders: [],
@@ -185,14 +210,14 @@
     hasRecord: false
   }]));
   const feed = { status: "connecting", lastTry: 0, backoffUntil: 0, fails: 0, inflight: false, lastOk: 0 };
+  const expanded = new Set();
 
   let active = false;
-  let current = KOL_LIST[0].key;
   let timer = null;
   let built = false;
 
   const root = () => document.getElementById("kol-view");
-  const st = () => kols.get(current);
+  const st = (key) => kols.get(key);
 
   function applySnap(s, snap) {
     const now = Date.now();
@@ -222,11 +247,10 @@
     s._posSig = posSig;
     s.detail = snap.detail || null;
     s.positions = Array.isArray(snap.positions) ? snap.positions : null;
-    if (s === st()) {
-      if (ordersChanged) renderOrders();
-      if (detailChanged) renderCard();
-      if (posChanged) renderPositions();
-    }
+    const key = s.cfg.key;
+    if (detailChanged) renderHead(key);
+    if (posChanged) renderPositions(key);
+    if (ordersChanged) renderOrders(key);
   }
 
   async function poll() {
@@ -250,8 +274,9 @@
       feed.fails += 1;
       feed.status = "error";
       feed.backoffUntil = Date.now() + Math.min(MAX_BACKOFF_MS, POLL_MS * Math.pow(2, feed.fails - 1));
-      const s = st();
-      if (!s.loaded) renderOrders();
+      for (const k of kols.keys()) {
+        if (!st(k).loaded) renderOrders(k);
+      }
       renderStatus();
       return;
     }
@@ -278,33 +303,52 @@
     try { await poll(); } finally { feed.inflight = false; }
   }
 
-  function statusInfo(s) {
+  function feedSrc() {
+    let newest = 0;
+    let oldest = 0;
+    let anyRecord = false;
+    let anyOk = false;
+    for (const s of kols.values()) {
+      if (s.hasRecord) anyRecord = true;
+      if (s.srcOk) {
+        anyOk = true;
+        if (!newest || s.srcOk > newest) newest = s.srcOk;
+        if (!oldest || s.srcOk < oldest) oldest = s.srcOk;
+      }
+    }
+    return { newest, oldest, anyRecord, anyOk };
+  }
+
+  function statusInfo() {
     if (!active || document.hidden) return { cls: "paused", text: t("paused") };
     if (feed.status === "backoff") return { cls: "backoff", text: t("backoff", { s: Math.max(1, Math.ceil((feed.backoffUntil - Date.now()) / 1000)) }) };
     if (feed.status === "error") return { cls: "error", text: t("error") };
     if (feed.status === "connecting") return { cls: "connecting", text: t("connecting") };
-    if (!s.hasRecord || !s.srcOk) return { cls: "error", text: t("not_ready") };
-    const age = Date.now() - s.srcOk;
+    const src = feedSrc();
+    if (!src.anyRecord || !src.anyOk) return { cls: "error", text: t("not_ready") };
+    const age = Date.now() - src.oldest;
     if (age > STALE_MS) return { cls: "backoff", text: t("stale", { s: Math.round(age / 1000) }) };
     return { cls: "live", text: t("live") };
   }
 
-  function agoText(s) {
-    if (!s.srcOk) return t("never");
-    const sec = Math.max(0, Math.round((Date.now() - s.srcOk) / 1000));
+  function agoText() {
+    const src = feedSrc();
+    if (!src.newest) return t("never");
+    const sec = Math.max(0, Math.round((Date.now() - src.newest) / 1000));
     return sec < 120 ? t("updated", { s: sec }) : t("updated_min", { m: Math.round(sec / 60) });
   }
 
   function renderStatus() {
     const box = root();
     if (!box || !built) return;
-    const s = st();
     const el = box.querySelector("[data-kol-status]");
     if (!el) return;
-    const info = statusInfo(s);
+    const info = statusInfo();
     el.dataset.state = info.cls;
     el.querySelector(".kol-status-text").textContent = info.text;
-    el.querySelector(".kol-status-ago").textContent = agoText(s);
+    el.querySelector(".kol-status-ago").textContent = agoText();
+    const zone = box.querySelector("[data-kol-zone]");
+    if (zone) zone.textContent = t("times_in", { z: zoneText() });
   }
 
   function renderAges() {
@@ -312,106 +356,142 @@
     if (!box) return;
     const now = Date.now();
     box.querySelectorAll(".kol-order.is-new").forEach((row) => {
-      const until = st().newUntil.get(row.getAttribute("data-key"));
+      const key = row.getAttribute("data-kol");
+      const s = key && st(key);
+      const until = s && s.newUntil.get(row.getAttribute("data-key"));
       if (!until || until < now) row.classList.remove("is-new");
     });
   }
 
-  function picker() {
-    if (KOL_LIST.length < 2) return "";
-    return `<div class="kol-picker" role="tablist">${KOL_LIST.map((k) => `<button type="button" role="tab" class="channel-pill${k.key === current ? " is-active" : ""}" aria-selected="${k.key === current}" data-kol="${esc(k.key)}">${esc(k.name)}</button>`).join("")}</div>`;
+  function bindAvatars(scope) {
+    (scope || root() || document).querySelectorAll("img[data-kol-avatar]").forEach((img) => {
+      if (img.dataset.bound === "1") return;
+      img.dataset.bound = "1";
+      const wrap = img.closest(".kol-avatar");
+      if (!wrap) return;
+      const ok = () => { wrap.classList.add("has-img"); };
+      const fail = () => { wrap.classList.remove("has-img"); img.remove(); };
+      if (img.complete) {
+        if (img.naturalWidth) ok();
+        else fail();
+        return;
+      }
+      img.addEventListener("load", ok, { once: true });
+      img.addEventListener("error", fail, { once: true });
+    });
   }
 
-  function build() {
+  function cardEl(key) {
     const box = root();
-    if (!box) return;
-    built = true;
-    box.innerHTML = `
-      ${picker()}
-      <div class="kol-head">
-        <h2 class="kol-title">${esc(t("title"))}</h2>
-        <span class="kol-status" data-kol-status data-state="connecting">
-          <span class="kol-dot" aria-hidden="true"></span>
-          <span class="kol-status-text"></span>
-          <span class="kol-status-ago"></span>
-        </span>
-      </div>
-      <section class="kol-card" data-kol-card></section>
-      <section class="kol-block">
-        <h3 class="kol-sub">${esc(t("positions"))}</h3>
-        <div data-kol-positions></div>
-      </section>
-      <section class="kol-block">
-        <div class="kol-sub-row">
-          <h3 class="kol-sub">${esc(t("orders"))}</h3>
-          <span class="kol-zone" data-kol-zone></span>
-        </div>
-        <div data-kol-orders></div>
-      </section>
-      <p class="kol-note">${esc(t("note"))}</p>`;
-    renderCard();
-    renderPositions();
-    renderOrders();
-    renderStatus();
+    return box && box.querySelector(`[data-kol-card="${CSS.escape(key)}"]`);
   }
 
-  function renderCard() {
-    const box = root();
-    const el = box && box.querySelector("[data-kol-card]");
-    if (!el) return;
-    const s = st();
+  function posRows(list) {
+    return (list || []).filter((p) => {
+      const amt = num(p.positionAmount != null ? p.positionAmount : p.positionAmt);
+      return amt != null && amt !== 0;
+    });
+  }
+
+  function posSummary(s) {
+    if (s.positions == null && !s.detail) return t("loading");
+    if (s.positions == null) return feed.status === "error" ? t("load_failed") : t("loading");
+    const rows = posRows(s.positions);
+    if (!rows.length) {
+      const hidden = s.detail && s.detail.positionShow === false;
+      return hidden ? t("positions_hidden") : t("positions_empty");
+    }
+    const bits = rows.slice(0, 3).map((p) => {
+      const amt = num(p.positionAmount != null ? p.positionAmount : p.positionAmt);
+      const ps = String(p.positionSide || "").toUpperCase();
+      const long = ps === "LONG" || (ps !== "SHORT" && amt > 0);
+      const lev = num(p.leverage);
+      return `${p.symbol || "—"} ${t(long ? "long" : "short")}${lev ? ` ${fmtNum(lev, 0)}x` : ""}`;
+    });
+    const more = rows.length > 3 ? ` · ${t("positions_n", { n: rows.length })}` : (rows.length > 1 ? ` · ${t("positions_n", { n: rows.length })}` : "");
+    return bits.join(" · ") + (rows.length > 3 ? more : "");
+  }
+
+  function orderRow(s, o, now, { head = false } = {}) {
+    if (head) {
+      return `<div class="kol-order kol-order-head" aria-hidden="true">
+      <span class="c-time">${esc(t("time"))}</span><span class="c-sym">${esc(t("symbol"))}</span><span class="c-act">${esc(t("action"))}</span>
+      <span class="c-num c-price">${esc(t("price"))}</span><span class="c-num c-qty">${esc(t("qty"))}</span><span class="c-num c-notional">${esc(t("notional"))}</span><span class="c-num c-pnl">${esc(t("pnl"))}</span>
+    </div>`;
+    }
+    const k = orderKey(o);
+    const a = actionOf(o);
+    const isNew = (s.newUntil.get(k) || 0) > now;
+    const price = num(o.avgPrice);
+    const qty = num(o.executedQty);
+    const notional = price != null && qty != null ? price * qty : null;
+    const buy = String(o.side || "").toUpperCase() === "BUY";
+    const pnl = isClose(a) ? o.totalPnl : null;
+    return `<div class="kol-order${isNew ? " is-new" : ""}" role="listitem" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
+        <span class="c-time">${esc(fmtTime(o.orderTime))}${isNew ? ` <span class="kol-new">${esc(t("is_new"))}</span>` : ""}</span>
+        <span class="c-sym">${esc(o.symbol || "—")}</span>
+        <span class="c-act"><span class="kol-side ${buy ? "is-buy" : "is-sell"}">${esc(t(a))}</span></span>
+        <span class="c-num c-price" data-label="${esc(t("price"))}">${esc(fmtPrice(price))}</span>
+        <span class="c-num c-qty" data-label="${esc(t("qty"))}">${esc(fmtNum(qty))}</span>
+        <span class="c-num c-notional" data-label="${esc(t("notional"))}">${esc(fmtUsdt(notional))}</span>
+        <span class="c-num c-pnl ${pnl != null ? pnlClass(pnl) : ""}" data-label="${esc(t("pnl"))}">${pnl != null ? esc(fmtPnl(pnl)) : "—"}</span>
+      </div>`;
+  }
+
+  function renderHead(key) {
+    const el = cardEl(key);
+    const head = el && el.querySelector("[data-kol-head]");
+    if (!head) return;
+    const s = st(key);
     const c = s.cfg;
     const d = s.detail || {};
     const avatar = typeof d.avatarUrl === "string" && /^https:\/\//.test(d.avatarUrl) ? d.avatarUrl : "";
-    const initial = esc(c.name.slice(0, 1));
+    const initial = (d.nickname || c.name).trim().slice(0, 1) || "?";
     const cur = num(d.currentCopyCount);
     const max = num(d.maxCopyCount);
     const full = cur != null && max != null && max > 0 && cur >= max;
     const stat = (label, value, extra = "") => `<div class="kol-stat"><span class="k">${esc(label)}</span><span class="v">${value}${extra}</span></div>`;
     const bio = typeof d.description === "string" ? d.description.trim() : "";
-    el.innerHTML = `
+    head.innerHTML = `
       <div class="kol-id">
-        <span class="kol-avatar">${avatar ? `<img src="${esc(avatar)}" alt="" width="44" height="44" loading="lazy" referrerpolicy="no-referrer">` : initial}</span>
+        <span class="kol-avatar" data-initial="${esc(initial)}">
+          <span class="kol-avatar-fallback" aria-hidden="true">${esc(initial)}</span>
+          ${avatar ? `<img src="${esc(avatar)}" alt="" width="40" height="40" loading="lazy" referrerpolicy="no-referrer" data-kol-avatar>` : ""}
+        </span>
         <div class="kol-id-text">
-          <div class="kol-name">${esc(d.nickname || c.name)}${d.isPaused ? ` <span class="kol-tag">${esc(t("copy_status_paused"))}</span>` : ""}</div>
+          <div class="kol-name">${esc(d.nickname || c.name)}${c.pinned ? ` <span class="kol-tag kol-pin-tag">${esc(t("pinned"))}</span>` : ""}${d.isPaused ? ` <span class="kol-tag">${esc(t("copy_status_paused"))}</span>` : ""}</div>
           <div class="kol-links">
             <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${esc(t("binance_page"))} ↗</a>
             ${c.x ? `<a href="https://x.com/${encodeURIComponent(c.x)}" target="_blank" rel="noopener noreferrer">@${esc(c.x)}</a>` : ""}
           </div>
         </div>
       </div>
-      ${bio ? `<p class="kol-bio">${esc(bio)}</p>` : ""}
+      ${bio ? `<p class="kol-bio" title="${esc(bio)}">${esc(bio)}</p>` : ""}
       ${s.detail ? `<div class="kol-stats">
         ${stat(t("aum"), esc(fmtUsdt(d.aumAmount, true)))}
         ${stat(t("balance"), esc(fmtUsdt(d.marginBalance, true)))}
         ${stat(t("copiers"), cur != null ? `${esc(fmtNum(cur, 0))}${max != null ? ` / ${esc(fmtNum(max, 0))}` : ""}` : "—", full ? ` <span class="kol-tag">${esc(t("full"))}</span>` : "")}
         ${stat(t("share"), num(d.profitSharingRate) != null ? `${esc(fmtNum(d.profitSharingRate, 2))}%` : "—")}
       </div>` : `<p class="kol-muted">${esc(feed.status === "error" ? t("load_failed") : t("loading"))}</p>`}`;
+    bindAvatars(head);
   }
 
-  function posRows(list) {
-    return list.filter((p) => {
-      const amt = num(p.positionAmount != null ? p.positionAmount : p.positionAmt);
-      return amt != null && amt !== 0;
-    });
-  }
-
-  function renderPositions() {
-    const box = root();
-    const el = box && box.querySelector("[data-kol-positions]");
+  function renderPositions(key) {
+    const el = cardEl(key);
     if (!el) return;
-    const s = st();
-    if (s.positions == null) {
-      el.innerHTML = `<p class="kol-muted">${esc(feed.status === "error" ? t("load_failed") : t("loading"))}</p>`;
-      return;
-    }
-    const rows = posRows(s.positions);
+    const s = st(key);
+    const line = el.querySelector("[data-kol-pos-line]");
+    if (line) line.innerHTML = `<p class="kol-pos-line">${esc(t("positions_summary", { s: posSummary(s) }))}</p>`;
+    const box = el.querySelector("[data-kol-positions]");
+    if (!box) return;
+    const rows = s.positions == null ? [] : posRows(s.positions);
     if (!rows.length) {
-      const hidden = s.detail && s.detail.positionShow === false;
-      el.innerHTML = `<p class="kol-muted">${esc(hidden ? t("positions_hidden") : t("positions_empty"))}</p>`;
+      box.innerHTML = "";
+      box.hidden = true;
       return;
     }
-    el.innerHTML = `<div class="kol-positions">${rows.map((p) => {
+    box.hidden = false;
+    box.innerHTML = `<h3 class="kol-sub">${esc(t("positions"))}</h3><div class="kol-positions">${rows.map((p) => {
       const amt = num(p.positionAmount != null ? p.positionAmount : p.positionAmt);
       const ps = String(p.positionSide || "").toUpperCase();
       const long = ps === "LONG" || (ps !== "SHORT" && amt > 0);
@@ -427,55 +507,101 @@
     }).join("")}</div>`;
   }
 
-  function renderOrders() {
-    const box = root();
-    const el = box && box.querySelector("[data-kol-orders]");
+  function historyCount(s) {
+    return Math.max(0, s.orders.length - 1);
+  }
+
+  function syncExpand(key) {
+    const el = cardEl(key);
     if (!el) return;
-    const zone = box.querySelector("[data-kol-zone]");
-    if (zone) zone.textContent = t("times_in", { z: zoneText() });
-    const s = st();
+    const open = expanded.has(key);
+    el.classList.toggle("is-expanded", open);
+    const hist = el.querySelector("[data-kol-history]");
+    if (hist) hist.hidden = !open;
+    const btn = el.querySelector("[data-kol-toggle]");
+    const s = st(key);
+    const n = historyCount(s);
+    if (btn) {
+      btn.hidden = n < 1;
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = open ? t("history_hide") : t("history_show", { n });
+    }
+  }
+
+  function renderOrders(key) {
+    const el = cardEl(key);
+    if (!el) return;
+    const s = st(key);
+    const latest = el.querySelector("[data-kol-latest]");
+    const histOrders = el.querySelector("[data-kol-hist-orders]");
+    if (!latest || !histOrders) return;
     if (!s.loaded) {
-      el.innerHTML = `<p class="kol-muted">${esc(feed.status === "error" ? t("load_failed") : (feed.status === "ok" ? t("not_ready") : t("loading")))}</p>`;
+      latest.innerHTML = `<p class="kol-muted">${esc(feed.status === "error" ? t("load_failed") : (feed.status === "ok" ? t("not_ready") : t("loading")))}</p>`;
+      histOrders.innerHTML = "";
+      syncExpand(key);
       return;
     }
     if (!s.orders.length) {
-      el.innerHTML = `<p class="kol-muted">${esc(t("orders_empty"))}</p>`;
+      latest.innerHTML = `<p class="kol-muted">${esc(t("orders_empty"))}</p>`;
+      histOrders.innerHTML = "";
+      syncExpand(key);
       return;
     }
     const now = Date.now();
-    const head = `<div class="kol-order kol-order-head" aria-hidden="true">
-      <span class="c-time">${esc(t("time"))}</span><span class="c-sym">${esc(t("symbol"))}</span><span class="c-act">${esc(t("action"))}</span>
-      <span class="c-num c-price">${esc(t("price"))}</span><span class="c-num c-qty">${esc(t("qty"))}</span><span class="c-num c-notional">${esc(t("notional"))}</span><span class="c-num c-pnl">${esc(t("pnl"))}</span>
-    </div>`;
-    el.innerHTML = `<div class="kol-orders" role="list">${head}${s.orders.map((o) => {
-      const k = orderKey(o);
-      const a = actionOf(o);
-      const isNew = (s.newUntil.get(k) || 0) > now;
-      const price = num(o.avgPrice);
-      const qty = num(o.executedQty);
-      const notional = price != null && qty != null ? price * qty : null;
-      const buy = String(o.side || "").toUpperCase() === "BUY";
-      const pnl = isClose(a) ? o.totalPnl : null;
-      return `<div class="kol-order${isNew ? " is-new" : ""}" role="listitem" data-key="${esc(k)}">
-        <span class="c-time">${esc(fmtTime(o.orderTime))}${isNew ? ` <span class="kol-new">${esc(t("is_new"))}</span>` : ""}</span>
-        <span class="c-sym">${esc(o.symbol || "—")}</span>
-        <span class="c-act"><span class="kol-side ${buy ? "is-buy" : "is-sell"}">${esc(t(a))}</span></span>
-        <span class="c-num c-price" data-label="${esc(t("price"))}">${esc(fmtPrice(price))}</span>
-        <span class="c-num c-qty" data-label="${esc(t("qty"))}">${esc(fmtNum(qty))}</span>
-        <span class="c-num c-notional" data-label="${esc(t("notional"))}">${esc(fmtUsdt(notional))}</span>
-        <span class="c-num c-pnl ${pnl != null ? pnlClass(pnl) : ""}" data-label="${esc(t("pnl"))}">${pnl != null ? esc(fmtPnl(pnl)) : "—"}</span>
-      </div>`;
-    }).join("")}</div>`;
+    const first = s.orders[0];
+    const rest = s.orders.slice(1);
+    latest.innerHTML = `<div class="kol-orders kol-orders-latest" role="list">${orderRow(s, null, now, { head: true })}${orderRow(s, first, now)}</div>`;
+    histOrders.innerHTML = rest.length
+      ? `<h3 class="kol-sub">${esc(t("orders"))}</h3><div class="kol-orders" role="list">${orderRow(s, null, now, { head: true })}${rest.map((o) => orderRow(s, o, now)).join("")}</div>`
+      : "";
+    syncExpand(key);
+  }
+
+  function renderKol(key) {
+    renderHead(key);
+    renderPositions(key);
+    renderOrders(key);
+  }
+
+  function build() {
+    const box = root();
+    if (!box) return;
+    built = true;
+    box.innerHTML = `
+      <div class="kol-head">
+        <h2 class="kol-title">${esc(t("title"))}</h2>
+        <span class="kol-status" data-kol-status data-state="connecting">
+          <span class="kol-dot" aria-hidden="true"></span>
+          <span class="kol-status-text"></span>
+          <span class="kol-status-ago"></span>
+        </span>
+      </div>
+      <p class="kol-zone" data-kol-zone></p>
+      <div class="kol-grid" data-kol-grid>
+        ${visibleKols().map((c) => `<article class="kol-card${c.pinned ? " is-pinned" : ""}" data-kol-card="${esc(c.key)}">
+          <div data-kol-head></div>
+          <div data-kol-pos-line></div>
+          <div data-kol-latest></div>
+          <button type="button" class="kol-toggle" data-kol-toggle="${esc(c.key)}" aria-controls="kol-hist-${esc(c.key)}" aria-expanded="false" hidden></button>
+          <div class="kol-history" id="kol-hist-${esc(c.key)}" data-kol-history hidden>
+            <div data-kol-positions hidden></div>
+            <div data-kol-hist-orders></div>
+          </div>
+        </article>`).join("")}
+      </div>
+      <p class="kol-note">${esc(t("note"))}</p>`;
+    for (const c of visibleKols()) renderKol(c.key);
+    renderStatus();
   }
 
   function onClick(e) {
-    const b = e.target.closest("[data-kol]");
+    const b = e.target.closest("[data-kol-toggle]");
     if (!b) return;
-    const k = b.getAttribute("data-kol");
-    if (!kols.has(k) || k === current) return;
-    current = k;
-    build();
-    tick();
+    const k = b.getAttribute("data-kol-toggle");
+    if (!kols.has(k)) return;
+    if (expanded.has(k)) expanded.delete(k);
+    else expanded.add(k);
+    syncExpand(k);
   }
 
   function setActive(on) {
@@ -503,6 +629,8 @@
 
   window.BTC007_KOL = {
     list: KOL_LIST,
+    compareKols,
+    visibleKols,
     setActive,
     rerender() { if (built) build(); }
   };
