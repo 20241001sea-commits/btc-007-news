@@ -577,6 +577,7 @@ window.BITXSEA_I18N.ru = {
 
 window.BITXSEA_CHANNELS = [
   { key: "main", zh: "方程式新闻", en: "Headlines", ko: "헤드라인", tr: "Manşetler", ru: "Заголовки" },
+  { key: "alpha", zh: "币安 Alpha", en: "Binance Alpha", ko: "Binance Alpha", tr: "Binance Alpha", ru: "Binance Alpha" },
   { key: "kol-trading", zh: "KOL带单", en: "KOL Trades", ko: "KOL 카피트레이딩", tr: "KOL İşlemleri", ru: "Сделки KOL" },
   { key: "trader-leaderboard", zh: "Hype 交易员盈利TOP10", en: "Hype Top 10 Traders by PnL", ko: "Hype 수익 TOP10 트레이더", tr: "Hype PnL’ye Göre İlk 10 Trader", ru: "Hype: топ-10 трейдеров по прибыли" },
   { key: "paper-leaderboard", zh: "Paper 交易员盈利TOP10", en: "Paper Top 10 Traders by PnL", ko: "Paper 수익 TOP10 트레이더", tr: "Paper PnL’ye Göre İlk 10 Trader", ru: "Paper: топ-10 трейдеров по прибыли" },
@@ -588,7 +589,6 @@ window.BITXSEA_CHANNELS = [
   { key: "major", zh: "大幅波动", en: "Big Moves", ko: "큰 변동", tr: "Büyük Hareketler", ru: "Крупные движения" },
   { key: "tier2", zh: "二线上新", en: "Tier-2 Listings", ko: "2선 상장", tr: "2. kademe listeler", ru: "Листинги 2-го уровня" },
   { key: "tier3", zh: "三线上新", en: "Tier-3 Listings", ko: "3선 상장", tr: "3. kademe listeler", ru: "Листинги 3-го уровня" },
-  { key: "alpha", zh: "币安 Alpha", en: "Binance Alpha", ko: "Binance Alpha", tr: "Binance Alpha", ru: "Binance Alpha" },
   { key: "cz", zh: "CZ&何一", en: "CZ & Yi He", ko: "CZ와 허이", tr: "CZ ve Yi He", ru: "CZ и Yi He" },
   { key: "earn", zh: "理财提醒", en: "Earn Alerts", ko: "수익 알림", tr: "Kazanç uyarıları", ru: "Напоминания о доходе" },
   { key: "hl", zh: "Hyperliquid", en: "Hyperliquid", ko: "Hyperliquid", tr: "Hyperliquid", ru: "Hyperliquid" },
