@@ -17,3 +17,8 @@ Open `index.html` after a static deploy, or republish the folder with here.now u
 ## Paper Top 10 Traders by PnL (`paper-leaderboard`)
 
 Papertrade (exchange.papertrade.xyz) is a **real-money, on-chain perpetual exchange on HyperEVM mainnet** (BTC/ETH, USDC margin, every trade has a txHash). It is not a simulated game. A poller outside this repo (`/workspace/paper-leaderboard-poller`) follows its public no-login "Accounts" leaderboard (24h window), trade history and live position streams, and PATCHes one snapshot per trader into the Site Data collection `paper_feed`. `paper.js` renders it with the same row/expand/history pattern as the Hyperliquid channel. Traders without public trades or inactive for 7 days are skipped.
+
+
+## Event Intelligence (`?ch=event-intelligence`)
+
+A channel for already-geocoded public events (not a map of this site’s headlines). The default filter is market-relevant world events, with a toggle for all qualifying records. The night-earth basemap is a self-hosted, colour-graded NASA Black Marble 2016 raster (attribution on the map). A box poller (`/workspace/event-intelligence-poller`, started with `run.sh`) reads USGS earthquake feeds and GDELT Events 2.0 exports and PATCHes one snapshot into the Site Data collection `event_feed`. Coordinates are only those supplied by the sources.

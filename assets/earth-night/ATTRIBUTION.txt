@@ -1,0 +1,4 @@
+NASA Earth Observatory — Black Marble 2016 (Suomi NPP / VIIRS).
+Tiles were retrieved from NASA GIBS and colour-graded for this site.
+Source documentation: https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/
+Do not imply NASA endorsement of BTC-007 News.

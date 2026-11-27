@@ -27,6 +27,7 @@
   const KOL_CHANNEL = "kol-trading";
   const TRADER_CHANNEL = "trader-leaderboard";
   const PAPER_CHANNEL = "paper-leaderboard";
+  const EI_CHANNEL = "event-intelligence";
   const I18N = window.BITXSEA_I18N || {};
   const CHANNELS = window.BITXSEA_CHANNELS || [];
   const CHANNEL_MAP = Object.fromEntries(CHANNELS.map((c) => [c.key, c]));
@@ -294,6 +295,7 @@
     if (window.BTC007_KOL) window.BTC007_KOL.rerender();
     if (window.BTC007_TRADERS) window.BTC007_TRADERS.rerender();
     if (window.BTC007_PAPER) window.BTC007_PAPER.rerender();
+    if (window.BTC007_EVENTS) window.BTC007_EVENTS.rerender();
     if (state.order.length) renderFeed();
     if (state.view === "article" && state.articleCache) renderArticle(state.articleCache);
     if (state.coinDrawer) {
@@ -402,6 +404,7 @@
     if (window.BTC007_KOL) window.BTC007_KOL.rerender();
     if (window.BTC007_TRADERS) window.BTC007_TRADERS.rerender();
     if (window.BTC007_PAPER) window.BTC007_PAPER.rerender();
+    if (window.BTC007_EVENTS) window.BTC007_EVENTS.rerender();
     updateNewChip();
     updateLivePill();
     updateClock();
@@ -693,6 +696,10 @@
     return state.channel === PAPER_CHANNEL;
   }
 
+  function isEventChannel() {
+    return state.channel === EI_CHANNEL;
+  }
+
   function syncKol() {
     const on = state.view === "feed" && isKolChannel();
     document.body.dataset.kol = on ? "1" : "";
@@ -709,11 +716,16 @@
     const pBox = $("paper-view");
     if (pBox) pBox.hidden = !pOn;
     if (window.BTC007_PAPER) window.BTC007_PAPER.setActive(pOn);
+    const eOn = state.view === "feed" && isEventChannel();
+    document.body.dataset.ei = eOn ? "1" : "";
+    const eBox = $("ei-view");
+    if (eBox) eBox.hidden = !eOn;
+    if (window.BTC007_EVENTS) window.BTC007_EVENTS.setActive(eOn);
   }
 
   async function pollNews() {
     if (document.hidden) return;
-    if (isKolChannel() || isTraderChannel() || isPaperChannel()) return;
+    if (isKolChannel() || isTraderChannel() || isPaperChannel() || isEventChannel()) return;
     if (Date.now() < state.newsPauseUntil) return;
     try {
       const res = await fetchNewsPath(`/news?${newsParams()}`);
@@ -933,7 +945,7 @@
     state.hasMore = true;
     updateNewChip();
     $("feed").innerHTML = `<div class="empty"><p>${esc(t("loading"))}</p></div>`;
-    if (isKolChannel() || isTraderChannel() || isPaperChannel()) return;
+    if (isKolChannel() || isTraderChannel() || isPaperChannel() || isEventChannel()) return;
     if (refetch) pollNews();
   }
 
