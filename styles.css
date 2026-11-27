@@ -796,8 +796,34 @@ html[data-theme="light"] .sponsor-brand {
 .story:hover .story-title { color: var(--accent); }
 .story:focus-visible { border-radius: var(--radius-sm); }
 
-.story.is-new .story-title { animation: fade-in 0.5s ease; }
-@keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+/* Soft wash for items that arrived after the current view is already showing. */
+.story.is-new,
+.kol-row-main.is-new,
+.kol-order-line.is-new {
+  animation: row-flash 1.7s ease-out;
+}
+.story.is-new-up,
+.kol-row-main.is-new-up,
+.kol-order-line.is-new-up { animation-name: row-flash-up; }
+.story.is-new-down,
+.kol-row-main.is-new-down,
+.kol-order-line.is-new-down { animation-name: row-flash-down; }
+.kol-row-main.is-new .kol-order-line.is-new { animation: none; }
+@keyframes row-flash {
+  0% { background-color: color-mix(in srgb, var(--accent) 20%, transparent); }
+  40% { background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
+  100% { background-color: transparent; }
+}
+@keyframes row-flash-up {
+  0% { background-color: color-mix(in srgb, var(--up) 22%, transparent); }
+  40% { background-color: color-mix(in srgb, var(--up) 10%, transparent); }
+  100% { background-color: transparent; }
+}
+@keyframes row-flash-down {
+  0% { background-color: color-mix(in srgb, var(--down) 22%, transparent); }
+  40% { background-color: color-mix(in srgb, var(--down) 10%, transparent); }
+  100% { background-color: transparent; }
+}
 
 .story-time {
   grid-row: 1 / span 3;
@@ -1564,7 +1590,9 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
     animation: none !important;
     transition: none !important;
   }
-  .story.is-new .story-title { animation: none; }
+  .story.is-new,
+  .kol-row-main.is-new,
+  .kol-order-line.is-new { animation: none; }
 }
 
 .coin-tag.is-active {
@@ -2285,7 +2313,6 @@ body[data-paper="1"] #feed-sentinel { display: none !important; }
   font-weight: 600;
 }
 .kol-sentence .kol-sym:hover { text-decoration-thickness: 2px; }
-.kol-order-line.is-new { animation: kol-flash 2.4s ease-out; }
 .kol-new {
   display: inline-block;
   padding: 0 5px;
@@ -2295,12 +2322,7 @@ body[data-paper="1"] #feed-sentinel { display: none !important; }
   color: var(--bg);
   background: var(--accent);
 }
-@keyframes kol-flash {
-  from { background: color-mix(in srgb, var(--accent) 22%, transparent); }
-  to { background: transparent; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .kol-order-line.is-new { animation: none; }
   .kol-status[data-state="live"] .kol-dot { animation: none; }
 }
 

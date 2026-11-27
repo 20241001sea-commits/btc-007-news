@@ -315,6 +315,32 @@
     if (a === "close_short") return "is-close-short";
     return String(a).startsWith("close") || a === "sell" ? "is-close-short" : "is-open-long";
   }
+  function flashTone(a) {
+    if (a === "open_short" || a === "close_short" || a === "sell") return "down";
+    if (a === "open_long" || a === "close_long" || a === "buy") return "up";
+    return "";
+  }
+  function newLineClass(isNew, a) {
+    if (!isNew) return "";
+    const tone = flashTone(a);
+    return " is-new" + (tone ? ` is-new-${tone}` : "");
+  }
+  function syncRowFlash(el, s, first, now) {
+    const main = el && el.querySelector(".kol-row-main");
+    if (!main) return;
+    const k = first ? orderKey(first) : "";
+    const isNew = !!(first && (s.newUntil.get(k) || 0) > now);
+    if (isNew && s.flashedKey !== k) {
+      s.flashedKey = k;
+      main.classList.remove("is-new", "is-new-up", "is-new-down");
+      void main.offsetWidth;
+      const tone = flashTone(actionOf(first));
+      main.classList.add("is-new");
+      if (tone) main.classList.add(`is-new-${tone}`);
+    } else if (!isNew) {
+      main.classList.remove("is-new", "is-new-up", "is-new-down");
+    }
+  }
   function symbolHref(sym) {
     return `https://www.binance.com/${lang() === "zh" ? "zh-CN" : "en"}/futures/${encodeURIComponent(sym)}`;
   }
@@ -348,7 +374,7 @@
     const k = orderKey(o);
     const a = actionOf(o);
     const isNew = (s.newUntil.get(k) || 0) > now;
-    return `<div class="kol-order-line${isNew ? " is-new" : ""}" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
+    return `<div class="kol-order-line${newLineClass(isNew, a)}" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
       <div class="kol-latest-meta">
         <span class="kol-time">${esc(fmtStamp(o.orderTime))}</span>
         <span class="kol-side ${sideClass(a)}">${esc(t(a))}</span>
@@ -537,7 +563,13 @@
       const key = row.getAttribute("data-kol");
       const s = key && st(key);
       const until = s && s.newUntil.get(row.getAttribute("data-key"));
-      if (!until || until < now) row.classList.remove("is-new");
+      if (!until || until < now) row.classList.remove("is-new", "is-new-up", "is-new-down");
+    });
+    box.querySelectorAll(".kol-row-main.is-new").forEach((main) => {
+      const latest = main.querySelector("[data-kol-latest] .kol-order-line");
+      if (!latest || !latest.classList.contains("is-new")) {
+        main.classList.remove("is-new", "is-new-up", "is-new-down");
+      }
     });
   }
 
@@ -732,6 +764,7 @@
     histOrders.innerHTML = rest.length
       ? `<h3 class="kol-sub">${esc(t("orders"))}</h3><div class="kol-history-list">${rest.map((o) => orderBlock(s, o, now)).join("")}</div>`
       : "";
+    syncRowFlash(el, s, first, now);
     syncExpand(key);
   }
 

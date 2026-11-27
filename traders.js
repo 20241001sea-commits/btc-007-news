@@ -210,6 +210,28 @@
     if (x.a === "close_short") return "is-close-short";
     return x.long ? "is-open-long" : "is-open-short";
   }
+  function flashTone(x) { return x && x.long ? "up" : "down"; }
+  function newLineClass(isNew, x) {
+    if (!isNew) return "";
+    const tone = flashTone(x);
+    return " is-new" + (tone ? ` is-new-${tone}` : "");
+  }
+  function syncRowFlash(el, s, first, now) {
+    const main = el && el.querySelector(".kol-row-main");
+    if (!main) return;
+    const k = first ? orderKey(first) : "";
+    const isNew = !!(first && (s.newUntil.get(k) || 0) > now);
+    if (isNew && s.flashedKey !== k) {
+      s.flashedKey = k;
+      main.classList.remove("is-new", "is-new-up", "is-new-down");
+      void main.offsetWidth;
+      const tone = flashTone(actionOf(first));
+      main.classList.add("is-new");
+      if (tone) main.classList.add(`is-new-${tone}`);
+    } else if (!isNew) {
+      main.classList.remove("is-new", "is-new-up", "is-new-down");
+    }
+  }
   const orderKey = (o) => [o.t, o.coin, o.dir, o.sz, o.px].join("|");
   const symHref = (c) => `${HL_APP}/trade/${encodeURIComponent(c)}`;
   function sentenceHtml(o) {
@@ -334,7 +356,13 @@
     box.querySelectorAll(".kol-order-line.is-new").forEach((row) => {
       const s = traders.get(row.getAttribute("data-tr"));
       const until = s && s.newUntil.get(row.getAttribute("data-key"));
-      if (!until || until < now) row.classList.remove("is-new");
+      if (!until || until < now) row.classList.remove("is-new", "is-new-up", "is-new-down");
+    });
+    box.querySelectorAll(".kol-row-main.is-new").forEach((main) => {
+      const latest = main.querySelector("[data-tr-latest] .kol-order-line");
+      if (!latest || !latest.classList.contains("is-new")) {
+        main.classList.remove("is-new", "is-new-up", "is-new-down");
+      }
     });
   }
 
@@ -342,7 +370,7 @@
     const k = orderKey(o);
     const x = actionOf(o);
     const isNew = (s.newUntil.get(k) || 0) > now;
-    return `<div class="kol-order-line${isNew ? " is-new" : ""}" data-tr="${esc(s.addr)}" data-key="${esc(k)}">
+    return `<div class="kol-order-line${newLineClass(isNew, x)}" data-tr="${esc(s.addr)}" data-key="${esc(k)}">
       <div class="kol-latest-meta">
         <span class="kol-time">${esc(fmtStamp(o.t))}</span>
         <span class="kol-side ${sideClass(x)}">${esc(t(x.a))}</span>
@@ -440,6 +468,8 @@
         const wasOpen = det.querySelector("details.kol-history[open]") != null;
         det.innerHTML = detailHtml(s);
         if (wasOpen) { const d = det.querySelector("details.kol-history"); if (d) d.open = true; }
+        const orders = (s.snap && s.snap.orders) || [];
+        syncRowFlash(el, s, orders[0], Date.now());
         s.dirty = false; s.lang = lang(); s.tz = tz();
       }
       syncExpand(s.addr);

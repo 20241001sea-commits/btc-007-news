@@ -795,8 +795,10 @@
     }
 
     if (brandNew.length) {
-      if (state.atTop || !state.order.length) {
-        for (const it of brandNew) upsertItem(it, { isNew: true });
+      const alreadyShowing = state.order.length > 0;
+      if (state.atTop || !alreadyShowing) {
+        // First paint and channel switches must not flash the whole list.
+        for (const it of brandNew) upsertItem(it, { isNew: alreadyShowing });
         changed = true;
       } else {
         for (const it of brandNew) {
@@ -1033,7 +1035,11 @@
     const note = it.data && it.data.note ? String(it.data.note) : "";
     const pct = it.data && typeof it.data.pct === "number" ? it.data.pct : null;
     const images = (it.images || []).map(safeHttpUrl).filter(Boolean).slice(0, 1);
-    const cls = it._isNew && !reducedMotion() ? " is-new" : "";
+    let cls = "";
+    if (it._isNew && !reducedMotion()) {
+      cls = " is-new";
+      if (typeof pct === "number") cls += pct >= 0 ? " is-new-up" : " is-new-down";
+    }
     return `<button type="button" class="story${cls}" data-id="${esc(id)}">
       <div class="story-time"><span>${esc(time)} <span class="rel">${esc(zone)}</span></span><span class="rel">${esc(rel)}</span></div>
       <div class="story-meta">
