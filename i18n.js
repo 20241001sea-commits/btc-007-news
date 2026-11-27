@@ -582,7 +582,6 @@ window.BITXSEA_CHANNELS = [
   { key: "trader-leaderboard", zh: "Hype 交易员盈利TOP10", en: "Hype Top 10 Traders by PnL", ko: "Hype 수익 TOP10 트레이더", tr: "Hype PnL’ye Göre İlk 10 Trader", ru: "Hype: топ-10 трейдеров по прибыли" },
   { key: "paper-leaderboard", zh: "Paper 交易员盈利TOP10", en: "Paper Top 10 Traders by PnL", ko: "Paper 수익 TOP10 트레이더", tr: "Paper PnL’ye Göre İlk 10 Trader", ru: "Paper: топ-10 трейдеров по прибыли" },
   { key: "tradfi", zh: "财经", en: "TradFi", ko: "전통 금융", tr: "TradFi", ru: "TradFi" },
-  { key: "event-intelligence", zh: "事件情报", en: "Event Intelligence", ko: "이벤트 인텔리전스", tr: "Olay İstihbaratı", ru: "Аналитика событий" },
   { key: "binance", zh: "币安公告", en: "Binance", ko: "바이낸스", tr: "Binance", ru: "Binance" },
   { key: "korea", zh: "韩所监控", en: "Korean Exchanges", ko: "한국 거래소", tr: "Kore Borsaları", ru: "Корейские биржи" },
   { key: "pricechange", zh: "价格异动", en: "Price Moves", ko: "가격 변동", tr: "Fiyat Hareketleri", ru: "Движения цены" },
