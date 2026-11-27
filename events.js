@@ -17,22 +17,25 @@
   const LEAFLET_CSS = "./assets/vendor/leaflet.css";
 
   const CAT_COLOR = {
-    seismic: [122, 208, 255],
-    conflict: [255, 107, 107],
-    sanction: [240, 193, 75],
     economy: [70, 240, 176],
+    company: [110, 190, 255],
+    sanction: [240, 193, 75],
+    conflict: [255, 107, 107],
     threat: [255, 155, 110],
-    other: [122, 240, 224]
+    seismic: [160, 200, 255],
+    other: [186, 168, 255]
   };
+  const FINANCE_BASES = ["0311", "033", "061", "071", "081", "1031", "163"];
+  const CONFLICT_CATS = new Set(["conflict", "threat", "seismic"]);
 
   const STR = {
     zh: {
       title: "事件情报",
-      lead: "有坐标的公开事件，不是本站快讯的地图化。默认只看与市场更相关的事件，可切换为全部合格记录。",
-      filter_market: "市场相关事件",
+      lead: "有坐标的公开经济与市场事件，不是本站快讯的地图化。",
+      filter_market: "股票与市场",
       filter_all: "全部合格事件",
-      filter_hint_market: "默认：经济、制裁、冲突与风险类新闻事件，以及显著或 6 级以上地震。",
-      filter_hint_all: "全部通过质量筛选、且已有坐标的公开记录（含 4.5 级以上地震）。坐标来自数据源，本站不补点。",
+      filter_hint_market: "默认只显示股票、公司、贸易、金融与货币政策等经济事件，不含地震和冲突。坐标来自数据源，本站不补点。",
+      filter_hint_all: "全部通过质量筛选且已有坐标的公开记录，包括地震与冲突。坐标来自数据源，本站不补点。",
       live_events: "实时事件",
       brief: "局势摘要",
       brief_empty: "当前筛选下暂无足够来源的条目可作摘要。",
@@ -44,6 +47,9 @@
       stale: "数据源延迟，上次更新在 {s} 之前。",
       updated: "{s}更新",
       empty_list: "当前筛选下没有可显示的事件。",
+      brief_notable: "来源条目",
+      brief_places: "地点",
+      empty_map: "当前筛选下暂无已定位的股票或市场事件。本站不会补点。",
       cluster: "附近有 {n} 起事件",
       legend: "图例",
       source: "来源",
@@ -53,6 +59,7 @@
       open_source: "打开来源",
       no_url: "无来源链接",
       attr: "地图底图：NASA Earth Observatory — Black Marble 2016。地震：美国地质调查局（USGS）。新闻事件：GDELT Project（如有）。坐标均来自上述来源，未人工补全。",
+      cat_company: "公司",
       cat_seismic: "地震",
       cat_conflict: "冲突",
       cat_sanction: "制裁",
@@ -62,17 +69,17 @@
       connecting: "连接中",
       live: "已连接",
       detail: "事件详情",
-      briefly: "基于当前列表的来源条目，非编辑部撰写。",
+      briefly: "根据当前列表的来源字段汇总，非编辑部撰写。",
       close: "关闭",
       mag: "震级 {n}"
     },
     en: {
       title: "Event Intelligence",
-      lead: "Public, already-geocoded events — not a map of this site’s headlines. The default view is market-relevant; you can switch to all qualifying records.",
-      filter_market: "Market-relevant events",
+      lead: "Public, already-geocoded economic and market events — not a map of this site’s headlines.",
+      filter_market: "Stocks & markets",
       filter_all: "All qualifying events",
-      filter_hint_market: "Default: economic, sanctions, conflict and risk-related news events, plus significant or magnitude-6+ earthquakes.",
-      filter_hint_all: "Every quality-filtered public record that already has coordinates, including M4.5+ earthquakes. Coordinates come from the sources; we do not invent points.",
+      filter_hint_market: "Default: stocks, companies, trade, finance, and monetary-policy news. Earthquakes and conflicts are hidden. Coordinates come from the sources; none are added here.",
+      filter_hint_all: "Every quality-filtered public record that already has coordinates, including earthquakes and conflicts. Coordinates come from the sources; we do not invent points.",
       live_events: "Live events",
       brief: "Situation brief",
       brief_empty: "No sourced items under the current filter to summarise.",
@@ -84,6 +91,9 @@
       stale: "Source delayed. Last update {s} ago.",
       updated: "Updated {s} ago",
       empty_list: "No events in the current filter.",
+      brief_notable: "Sourced items",
+      brief_places: "Places",
+      empty_map: "No geocoded stock or market events in this filter. Coordinates are not invented.",
       cluster: "{n} events near this location",
       legend: "Legend",
       source: "Source",
@@ -93,6 +103,7 @@
       open_source: "Open source",
       no_url: "No source link",
       attr: "Basemap: NASA Earth Observatory — Black Marble 2016. Earthquakes: U.S. Geological Survey. News events: the GDELT Project (when present). Coordinates come from those sources and are not filled in by hand.",
+      cat_company: "Company",
       cat_seismic: "Earthquake",
       cat_conflict: "Conflict",
       cat_sanction: "Sanctions",
@@ -102,17 +113,17 @@
       connecting: "Connecting",
       live: "Live",
       detail: "Event detail",
-      briefly: "Sourced from the current list, not an editorial brief.",
+      briefly: "A roll-up of fields from the current list, not an editorial brief.",
       close: "Close",
       mag: "Magnitude {n}"
     },
     ko: {
       title: "이벤트 인텔리전스",
-      lead: "좌표가 있는 공개 사건입니다. 이 사이트의 헤드라인을 지도에 올린 것이 아닙니다. 기본값은 시장 관련 사건이며, 자격을 갖춘 전체 기록으로 전환할 수 있습니다.",
-      filter_market: "시장 관련 사건",
+      lead: "좌표가 있는 공개 경제·시장 사건입니다. 이 사이트의 헤드라인을 지도에 올린 것이 아닙니다.",
+      filter_market: "주식·시장",
       filter_all: "적격 사건 전체",
-      filter_hint_market: "기본값: 경제·제재·분쟁 및 위험 관련 뉴스 사건과 주요 또는 규모 6 이상 지진.",
-      filter_hint_all: "좌표가 있는 품질 필터를 통과한 공개 기록 전체(규모 4.5 이상 지진 포함). 좌표는 출처에서 오며 임의로 채우지 않습니다.",
+      filter_hint_market: "기본값: 주식, 기업, 무역, 금융, 통화정책 관련 사건. 지진과 분쟁은 숨깁니다. 좌표는 출처에서 오며 임의로 채우지 않습니다.",
+      filter_hint_all: "좌표가 있는 품질 필터를 통과한 공개 기록 전체(지진과 분쟁 포함). 좌표는 출처에서 오며 임의로 채우지 않습니다.",
       live_events: "실시간 사건",
       brief: "상황 요약",
       brief_empty: "현재 필터에서 요약할 출처 항목이 없습니다.",
@@ -124,6 +135,9 @@
       stale: "소스가 지연되었습니다. 마지막 업데이트는 {s} 전입니다.",
       updated: "{s} 전 업데이트",
       empty_list: "현재 필터에 표시할 사건이 없습니다.",
+      brief_notable: "출처 항목",
+      brief_places: "장소",
+      empty_map: "현재 필터에 위치가 있는 주식·시장 사건이 없습니다. 좌표를 임의로 채우지 않습니다.",
       cluster: "이 위치 근처에 사건 {n}건",
       legend: "범례",
       source: "출처",
@@ -133,6 +147,7 @@
       open_source: "출처 열기",
       no_url: "출처 링크 없음",
       attr: "배경 지도: NASA Earth Observatory — Black Marble 2016. 지진: U.S. Geological Survey. 뉴스 사건: GDELT Project(있는 경우). 좌표는 해당 출처에서 오며 수동으로 보완하지 않습니다.",
+      cat_company: "기업",
       cat_seismic: "지진",
       cat_conflict: "분쟁",
       cat_sanction: "제재",
@@ -142,17 +157,17 @@
       connecting: "연결 중",
       live: "연결됨",
       detail: "사건 상세",
-      briefly: "현재 목록의 출처 항목이며 편집부 작성이 아닙니다.",
+      briefly: "현재 목록의 출처 필드 요약이며 편집부 작성이 아닙니다.",
       close: "닫기",
       mag: "규모 {n}"
     },
     tr: {
       title: "Olay İstihbaratı",
-      lead: "Koordinatı olan kamuya açık olaylar; sitedeki manşetlerin haritası değil. Varsayılan görünüm piyasayla ilgili olaylardır; tüm uygun kayıtlara geçebilirsiniz.",
-      filter_market: "Piyasayla ilgili olaylar",
+      lead: "Koordinatı olan kamuya açık ekonomik ve piyasa olayları; sitedeki manşetlerin haritası değil.",
+      filter_market: "Hisse ve piyasalar",
       filter_all: "Tüm uygun olaylar",
-      filter_hint_market: "Varsayılan: ekonomi, yaptırım, çatışma ve risk haberleri ile önemli veya 6 ve üzeri depremler.",
-      filter_hint_all: "Koordinatı olan, kalite süzgecinden geçen tüm kamuya açık kayıtlar (M4.5+ depremler dahil). Koordinatlar kaynaklardan gelir; biz uydurmayız.",
+      filter_hint_market: "Varsayılan: hisse, şirket, ticaret, finans ve para politikası haberleri. Depremler ve çatışmalar gizlenir. Koordinatlar kaynaklardan gelir; biz eklemeyiz.",
+      filter_hint_all: "Koordinatı olan, kalite süzgecinden geçen tüm kamuya açık kayıtlar (deprem ve çatışmalar dahil). Koordinatlar kaynaklardan gelir; biz uydurmayız.",
       live_events: "Canlı olaylar",
       brief: "Durum özeti",
       brief_empty: "Geçerli süzgeçte özetlenecek kaynaklı madde yok.",
@@ -164,6 +179,9 @@
       stale: "Kaynak gecikti. Son güncelleme {s} önce.",
       updated: "{s} önce güncellendi",
       empty_list: "Bu süzgeçte olay yok.",
+      brief_notable: "Kaynak maddeler",
+      brief_places: "Yerler",
+      empty_map: "Bu süzgeçte konumu olan hisse veya piyasa olayı yok. Koordinat uydurulmaz.",
       cluster: "Bu konum yakınında {n} olay",
       legend: "Gösterge",
       source: "Kaynak",
@@ -173,6 +191,7 @@
       open_source: "Kaynağı aç",
       no_url: "Kaynak bağlantısı yok",
       attr: "Altlık: NASA Earth Observatory — Black Marble 2016. Depremler: U.S. Geological Survey. Haber olayları: GDELT Project (varsa). Koordinatlar bu kaynaklardandır, elle tamamlanmaz.",
+      cat_company: "Şirket",
       cat_seismic: "Deprem",
       cat_conflict: "Çatışma",
       cat_sanction: "Yaptırım",
@@ -182,17 +201,17 @@
       connecting: "Bağlanılıyor",
       live: "Canlı",
       detail: "Olay ayrıntısı",
-      briefly: "Güncel listedeki kaynak maddeleridir; editoryal metin değildir.",
+      briefly: "Güncel listedeki kaynak alanlarının özeti; editoryal metin değildir.",
       close: "Kapat",
       mag: "Büyüklük {n}"
     },
     ru: {
       title: "Аналитика событий",
-      lead: "Открытые события с уже известными координатами, а не карта заголовков этого сайта. По умолчанию показаны события, более значимые для рынков; можно переключить на все подходящие записи.",
-      filter_market: "События, значимые для рынка",
+      lead: "Открытые экономические и рыночные события с уже известными координатами, а не карта заголовков этого сайта.",
+      filter_market: "Акции и рынки",
       filter_all: "Все подходящие события",
-      filter_hint_market: "По умолчанию: экономика, санкции, конфликты и риски, а также значительные землетрясения или магнитудой 6+.",
-      filter_hint_all: "Все прошедшие фильтр качества открытые записи с координатами, включая землетрясения M4.5+. Координаты берутся из источников, мы их не придумываем.",
+      filter_hint_market: "По умолчанию: акции, компании, торговля, финансы и денежная политика. Землетрясения и конфликты скрыты. Координаты берутся из источников, мы их не добавляем.",
+      filter_hint_all: "Все прошедшие фильтр качества открытые записи с координатами, включая землетрясения и конфликты. Координаты берутся из источников, мы их не придумываем.",
       live_events: "События",
       brief: "Обстановка",
       brief_empty: "В текущем фильтре нет sourced-пунктов для сводки.",
@@ -204,6 +223,9 @@
       stale: "Источник задерживается. Последнее обновление {s} назад.",
       updated: "Обновлено {s} назад",
       empty_list: "В текущем фильтре нет событий.",
+      brief_notable: "Пункты из источников",
+      brief_places: "Места",
+      empty_map: "В текущем фильтре нет событий по акциям или рынкам с координатами. Координаты не придумываются.",
       cluster: "Рядом с этой точкой: {n}",
       legend: "Легенда",
       source: "Источник",
@@ -213,6 +235,7 @@
       open_source: "Открыть источник",
       no_url: "Нет ссылки на источник",
       attr: "Подложка: NASA Earth Observatory — Black Marble 2016. Землетрясения: U.S. Geological Survey. Новостные события: GDELT Project (если есть). Координаты взяты из этих источников и не дополняются вручную.",
+      cat_company: "Компании",
       cat_seismic: "Землетрясение",
       cat_conflict: "Конфликт",
       cat_sanction: "Санкции",
@@ -222,7 +245,7 @@
       connecting: "Подключение",
       live: "Подключено",
       detail: "Сведения о событии",
-      briefly: "Пункты из текущего списка с указанием источника, это не редакционная сводка.",
+      briefly: "Сводка полей из текущего списка, это не редакционный текст.",
       close: "Закрыть",
       mag: "Магнитуда {n}"
     }
@@ -232,6 +255,7 @@
     active: false,
     built: false,
     filter: "market",
+    catFilter: null,
     events: [],
     checked_ms: 0,
     selected: null,
@@ -339,12 +363,31 @@
     return a == null ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a})`;
   }
 
-  function visibleEvents() {
-    const list = state.events.filter((e) => {
+  function isFinance(e) {
+    if (!e) return false;
+    if (typeof e.finance === "boolean") return e.finance;
+    if (e.source === "usgs" || e.category === "seismic") return false;
+    if (CONFLICT_CATS.has(e.category)) return false;
+    const code = String(e.event_code || "");
+    if (FINANCE_BASES.some((b) => code === b || code.startsWith(b))) return true;
+    if (e.category === "company" || e.category === "economy" || e.category === "sanction") {
+      // Legacy snapshots often labelled Demand / Provide aid / Coerce as economy or sanctions.
+      if (/^(Fight|Assault|Coerce|Threaten|Mass violence|Exhibit force|Protest|Demand|Provide aid|Reduce relations)\b/i.test(e.title || "")) return false;
+      return e.category === "company";
+    }
+    return false;
+  }
+
+  function baseVisible() {
+    return state.events.filter((e) => {
       if (!Number.isFinite(e.lat) || !Number.isFinite(e.lon)) return false;
-      if (state.filter === "market") return !!e.market_relevant;
+      if (state.filter === "market") return isFinance(e);
       return true;
     });
+  }
+
+  function visibleEvents() {
+    const list = baseVisible().filter((e) => !state.catFilter || e.category === state.catFilter);
     list.sort((a, b) => (Number(b.time_ms) || 0) - (Number(a.time_ms) || 0));
     return list;
   }
@@ -407,6 +450,7 @@
         <section class="ei-map-panel">
           <div id="ei-map" class="ei-map" role="img"></div>
           <ul class="ei-legend" id="ei-legend" aria-label=""></ul>
+          <div class="ei-map-empty" data-ei="map-empty" hidden></div>
           <div class="ei-map-attr" data-ei="attr"></div>
           <aside class="ei-detail" id="ei-detail" hidden></aside>
         </section>
@@ -530,7 +574,7 @@
         <span class="ei-pin" style="--ei-cat:${cssRgb(e.category)}"></span>
         <span class="ei-row-body">
           <span class="ei-row-title">${esc(e.title || e.place || e.id)}</span>
-          <span class="ei-row-meta"><span class="ei-cat">${esc(catLabel(e.category))}</span> · ${esc(when.rel || when.abs)} · ${esc(e.source_name || e.source || "")}</span>
+          <span class="ei-row-meta"><span class="ei-chip" style="--ei-cat:${cssRgb(e.category)}">${esc(catLabel(e.category))}</span> ${esc(when.rel || when.abs)} · ${esc(e.source_name || e.source || "")}</span>
         </span>
       </button>`;
     }).join("");
@@ -576,19 +620,57 @@
   function paintBrief() {
     const ul = document.getElementById("ei-brief-list");
     if (!ul) return;
-    const items = visibleEvents().slice(0, 8);
+    const items = visibleEvents();
     if (!items.length) {
       ul.innerHTML = `<li class="ei-empty">${esc(state.events.length ? t("brief_empty") : (state.status === "error" ? t("error") : t("loading")))}</li>`;
       return;
     }
-    ul.innerHTML = items.map((e) => {
+    const catOrder = ["economy", "company", "sanction", "conflict", "threat", "seismic", "other"];
+    const catCounts = {};
+    const placeCounts = {};
+    for (const e of items) {
+      const cat = e.category || "other";
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+      const place = (e.place || "").trim();
+      if (place) placeCounts[place] = (placeCounts[place] || 0) + 1;
+    }
+    const catLine = catOrder
+      .filter((c) => catCounts[c])
+      .map((c) => `${catLabel(c)} ${catCounts[c]}`)
+      .join(" · ");
+    const topPlaces = Object.entries(placeCounts)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 4)
+      .map(([name, n]) => n > 1 ? `${name} (${n})` : name);
+    // Notable sourced items: highest mention/source weight, at most one per place, not a list clone.
+    const ranked = items.slice().sort((a, b) => {
+      const wa = (Number(a.num_mentions) || 0) + (Number(a.num_sources) || 0) * 8;
+      const wb = (Number(b.num_mentions) || 0) + (Number(b.num_sources) || 0) * 8;
+      return wb - wa || (Number(b.time_ms) || 0) - (Number(a.time_ms) || 0);
+    });
+    const notable = [];
+    const seenPlace = new Set();
+    for (const e of ranked) {
+      const key = (e.place || e.id || "").toLowerCase();
+      if (seenPlace.has(key)) continue;
+      seenPlace.add(key);
+      notable.push(e);
+      if (notable.length >= 4) break;
+    }
+    const notableHtml = notable.map((e) => {
       const when = formatWhen(e.time_ms);
-      const inner = `${esc(e.title || e.place || "")} <span class="ei-brief-src">· ${esc(e.source_name || e.source || "")} · ${esc(when.rel || when.abs)}</span>`;
+      const inner = `${esc(e.place || "—")} — ${esc(e.title || e.id)} <span class="ei-brief-src">· ${esc(e.source_name || e.source || "")} · ${esc(when.rel || when.abs)}</span>`;
       if (e.url && /^https?:/i.test(e.url)) {
-        return `<li><a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${inner}</a></li>`;
+        return `<li class="ei-brief-item"><a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${inner}</a></li>`;
       }
-      return `<li>${inner}</li>`;
+      return `<li class="ei-brief-item">${inner}</li>`;
     }).join("");
+    ul.innerHTML = `
+      <li class="ei-brief-roll">${esc(catLine)}</li>
+      ${topPlaces.length ? `<li class="ei-brief-roll"><span class="ei-brief-k">${esc(t("brief_places"))}</span> ${esc(topPlaces.join(" · "))}</li>` : ""}
+      <li class="ei-brief-k">${esc(t("brief_notable"))}</li>
+      ${notableHtml}
+    `;
   }
 
   function formatPrice(p) {
@@ -613,15 +695,15 @@
       row.innerHTML = `<p class="ei-empty">${esc(t("markets_empty"))}</p>`;
       return;
     }
-    row.innerHTML = state.markets.map((r) => {
+    row.innerHTML = `<table class="ei-mkt-table"><tbody>${state.markets.map((r) => {
       const chg = Number(r.c24);
       const dir = !Number.isFinite(chg) || chg === 0 ? "flat" : chg > 0 ? "up" : "down";
-      return `<div class="ei-quote" data-dir="${dir}">
-        <span class="coin-sym">${esc(r.s)}</span>
-        <span class="coin-price">${esc(formatPrice(r.p))}</span>
-        <span class="coin-chg ${dir === "up" ? "is-up" : dir === "down" ? "is-down" : ""}">${esc(formatPct(r.c24))}</span>
-      </div>`;
-    }).join("");
+      return `<tr data-dir="${dir}">
+        <th scope="row">${esc(r.s)}</th>
+        <td class="ei-mkt-px">${esc(formatPrice(r.p))}</td>
+        <td class="ei-mkt-chg ${dir === "up" ? "is-up" : dir === "down" ? "is-down" : ""}">${esc(formatPct(r.c24))}</td>
+      </tr>`;
+    }).join("")}</tbody></table>`;
   }
 
   function paintAll() {
@@ -630,7 +712,8 @@
     paintDetail();
     paintBrief();
     paintMarkets();
-    updateMapLayers();
+    if (state.map) updateMapLayers();
+    else paintMapEmpty(visibleEvents());
   }
 
   function hasArc(e) {
@@ -658,12 +741,23 @@
   function paintLegend() {
     const box = document.getElementById("ei-legend");
     if (!box) return;
-    const present = new Set(visibleEvents().map((e) => e.category || "other"));
-    const order = ["conflict", "threat", "sanction", "economy", "seismic", "other"];
+    const present = new Set(baseVisible().map((e) => e.category || "other"));
+    const order = ["economy", "company", "sanction", "conflict", "threat", "seismic", "other"];
     const cats = order.filter((c) => present.has(c));
+    if (state.catFilter && !present.has(state.catFilter)) state.catFilter = null;
     box.innerHTML = cats.map((c) =>
-      `<li><i style="background:${catHex(c)}"></i>${esc(catLabel(c))}</li>`
+      `<li><button type="button" class="ei-leg${state.catFilter === c ? " is-on" : ""}" data-cat="${esc(c)}" aria-pressed="${state.catFilter === c}"><i style="background:${catHex(c)}"></i>${esc(catLabel(c))}</button></li>`
     ).join("");
+    box.onclick = (ev) => {
+      const btn = ev.target.closest("[data-cat]");
+      if (!btn) return;
+      const cat = btn.getAttribute("data-cat");
+      state.catFilter = state.catFilter === cat ? null : cat;
+      state.didFit = false;
+      const still = visibleEvents().some((e) => e.id === state.selected);
+      if (!still) state.selected = null;
+      paintAll();
+    };
   }
 
   function clusterEvents(items) {
@@ -734,48 +828,32 @@
       const latlngs = greatCircle([e.lon2, e.lat2], [e.lon, e.lat]).map((p) => [p[1], p[0]]);
       L.polyline(latlngs, {
         color: catHex(e.category),
-        weight: 1.8,
-        opacity: 0.75,
+        weight: 1.25,
+        opacity: 0.55,
         interactive: false
       }).addTo(state.arcLayer);
     }
     for (const g of clusterEvents(items)) {
       const head = g.items[0];
-      const hex = catHex(head.category);
       const on = g.items.some((e) => e.id === sel);
+      const weight = g.items.reduce((s, e) => s + (Number(e.num_mentions) || Number(e.magnitude) || 1), 0);
+      const sized = { ...head, num_mentions: weight, magnitude: head.magnitude };
+      const mark = L.marker([g.lat, g.lon], {
+        icon: orbIcon(sized, { count: g.items.length, on }),
+        keyboard: true,
+        riseOnHover: true
+      });
       if (g.items.length === 1) {
-        L.circleMarker([g.lat, g.lon], {
-          radius: on ? 18 : 13,
-          color: hex,
-          weight: 0,
-          fillColor: hex,
-          fillOpacity: on ? 0.38 : 0.26,
-          interactive: false
-        }).addTo(state.dotLayer);
-        const mark = L.circleMarker([g.lat, g.lon], {
-          radius: on ? 8 : 5.6,
-          color: "#fff",
-          weight: 1.3,
-          fillColor: hex,
-          fillOpacity: 1
-        });
         mark.on("click", () => { select(head.id, { fly: false }); openEventPopup(head); });
-        mark.addTo(state.dotLayer);
       } else {
-        const icon = L.divIcon({
-          className: "ei-cluster" + (on ? " is-on" : ""),
-          html: `<span class="ei-cluster-core" style="--ei-cat:${hex}">${g.items.length}</span>`,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
-        });
-        const mark = L.marker([g.lat, g.lon], { icon, keyboard: true, riseOnHover: true });
         mark.on("click", () => {
           select(head.id, { fly: false });
           openClusterPopup(g);
         });
-        mark.addTo(state.dotLayer);
       }
+      mark.addTo(state.dotLayer);
     }
+    paintMapEmpty(items);
     paintLegend();
     if ((fit || !state.didFit) && items.length) {
       const b = L.latLngBounds(items.map((e) => [e.lat, e.lon]));
@@ -789,6 +867,33 @@
     if (Number.isFinite(mag)) return 4 + Math.max(0, mag - 4) * 1.4;
     const n = Number(d.num_mentions) || Number(d.num_sources) || 1;
     return 4 + Math.min(6, Math.log10(Math.max(1, n)) * 3);
+  }
+
+  function orbIcon(e, { count = 1, on = false } = {}) {
+    const r = Math.max(4.2, radiusOf(e) * (on ? 1.18 : 1));
+    const hex = catHex(e.category);
+    const clustered = count > 1;
+    const size = Math.round(Math.max(clustered ? 28 : 22, r * 4.2));
+    const n = clustered ? String(count) : "";
+    return L.divIcon({
+      className: "ei-orb-icon" + (on ? " is-on" : "") + (clustered ? " is-cluster" : ""),
+      html: `<span class="ei-orb" style="--ei-cat:${hex};--ei-r:${r.toFixed(1)}px"><span class="ei-orb-bloom"></span><span class="ei-orb-halo"></span><span class="ei-orb-core">${n}</span></span>`,
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2]
+    });
+  }
+
+  function paintMapEmpty(items) {
+    const box = document.querySelector("[data-ei=map-empty]");
+    if (!box) return;
+    const ready = state.status === "live" || state.status === "empty" || state.events.length > 0;
+    if (ready && (!items || !items.length)) {
+      box.hidden = false;
+      box.textContent = state.events.length ? t("empty_map") : (state.status === "error" ? t("error") : t("loading"));
+    } else {
+      box.hidden = true;
+      box.textContent = "";
+    }
   }
 
   function greatCircle(a, b, n = 32) {
@@ -877,6 +982,8 @@
         source: raw.source || "",
         category: raw.category || "other",
         market_relevant: !!raw.market_relevant,
+        finance: typeof raw.finance === "boolean" ? raw.finance : null,
+        event_code: raw.event_code ? String(raw.event_code) : "",
         title: raw.title || "",
         place: raw.place || "",
         lat,
