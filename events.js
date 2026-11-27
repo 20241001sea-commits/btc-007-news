@@ -42,8 +42,10 @@
       not_ready: "数据源尚未就绪，稍后自动重试。",
       error: "暂时取不到事件数据，正在重试。",
       stale: "数据源延迟，上次更新在 {s} 之前。",
-      updated: "{s}前更新",
+      updated: "{s}更新",
       empty_list: "当前筛选下没有可显示的事件。",
+      cluster: "附近有 {n} 起事件",
+      legend: "图例",
       source: "来源",
       place: "地点",
       time: "时间",
@@ -82,6 +84,8 @@
       stale: "Source delayed. Last update {s} ago.",
       updated: "Updated {s} ago",
       empty_list: "No events in the current filter.",
+      cluster: "{n} events near this location",
+      legend: "Legend",
       source: "Source",
       place: "Place",
       time: "Time",
@@ -120,6 +124,8 @@
       stale: "소스가 지연되었습니다. 마지막 업데이트는 {s} 전입니다.",
       updated: "{s} 전 업데이트",
       empty_list: "현재 필터에 표시할 사건이 없습니다.",
+      cluster: "이 위치 근처에 사건 {n}건",
+      legend: "범례",
       source: "출처",
       place: "위치",
       time: "시간",
@@ -158,6 +164,8 @@
       stale: "Kaynak gecikti. Son güncelleme {s} önce.",
       updated: "{s} önce güncellendi",
       empty_list: "Bu süzgeçte olay yok.",
+      cluster: "Bu konum yakınında {n} olay",
+      legend: "Gösterge",
       source: "Kaynak",
       place: "Yer",
       time: "Zaman",
@@ -196,6 +204,8 @@
       stale: "Источник задерживается. Последнее обновление {s} назад.",
       updated: "Обновлено {s} назад",
       empty_list: "В текущем фильтре нет событий.",
+      cluster: "Рядом с этой точкой: {n}",
+      legend: "Легенда",
       source: "Источник",
       place: "Место",
       time: "Время",
@@ -232,7 +242,10 @@
     pollTimer: 0,
     marketTimer: 0,
     libs: false,
-    briefOpen: false
+    briefOpen: false,
+    didFit: false,
+    arcLayer: null,
+    dotLayer: null
   };
 
   try {
@@ -393,6 +406,7 @@
         </section>
         <section class="ei-map-panel">
           <div id="ei-map" class="ei-map" role="img"></div>
+          <ul class="ei-legend" id="ei-legend" aria-label=""></ul>
           <div class="ei-map-attr" data-ei="attr"></div>
           <aside class="ei-detail" id="ei-detail" hidden></aside>
         </section>
@@ -404,11 +418,11 @@
             <ul class="ei-brief-list" id="ei-brief-list"></ul>
           </div>
         </section>
+        <section class="ei-markets" aria-labelledby="ei-mkt-h">
+          <h3 id="ei-mkt-h" class="ei-panel-title" data-ei="markets-title"></h3>
+          <div class="ei-mkt-row" id="ei-mkt-row"></div>
+        </section>
       </div>
-      <section class="ei-markets" aria-labelledby="ei-mkt-h">
-        <h3 id="ei-mkt-h" class="ei-panel-title" data-ei="markets-title"></h3>
-        <div class="ei-mkt-row" id="ei-mkt-row"></div>
-      </section>
     `;
     state.built = true;
     root.querySelector("[data-ei=toggle]").addEventListener("click", onToggle);
@@ -460,6 +474,9 @@
       bt.textContent = t("brief");
       bt.setAttribute("aria-expanded", state.briefOpen ? "true" : "false");
     }
+    const legend = root.querySelector("#ei-legend");
+    if (legend) legend.setAttribute("aria-label", t("legend"));
+    paintLegend();
   }
 
   function onToggle(ev) {
@@ -468,6 +485,7 @@
     const next = btn.getAttribute("data-filter");
     if (next !== "market" && next !== "all") return;
     state.filter = next;
+    state.didFit = false;
     try { localStorage.setItem(LS_FILTER, next); } catch { /* ignore */ }
     const still = visibleEvents().some((e) => e.id === state.selected);
     if (!still) state.selected = null;
@@ -491,6 +509,9 @@
       const z = Math.min(Math.max(state.map.getZoom(), 3), 5.2);
       const opts = { duration: reducedMotion() ? 0 : 0.6 };
       if (state.map.flyTo) state.map.flyTo([ev.lat, ev.lon], z, opts);
+      const group = clusterEvents(visibleEvents()).find((g) => g.items.some((x) => x.id === ev.id));
+      if (group && group.items.length > 1) openClusterPopup(group);
+      else openEventPopup(ev);
     }
   }
 
@@ -634,8 +655,75 @@
     if (state.map && typeof state.map.invalidateSize === "function") state.map.invalidateSize();
   }
 
-  function updateMapLayers() {
+  function paintLegend() {
+    const box = document.getElementById("ei-legend");
+    if (!box) return;
+    const present = new Set(visibleEvents().map((e) => e.category || "other"));
+    const order = ["conflict", "threat", "sanction", "economy", "seismic", "other"];
+    const cats = order.filter((c) => present.has(c));
+    box.innerHTML = cats.map((c) =>
+      `<li><i style="background:${catHex(c)}"></i>${esc(catLabel(c))}</li>`
+    ).join("");
+  }
+
+  function clusterEvents(items) {
+    const thresh = 2.2;
+    const groups = [];
+    for (const e of items) {
+      let g = groups.find((x) => Math.hypot(e.lat - x.lat, (e.lon - x.lon) * Math.cos((e.lat * Math.PI) / 180)) < thresh);
+      if (!g) {
+        g = { lat: e.lat, lon: e.lon, items: [] };
+        groups.push(g);
+      }
+      g.items.push(e);
+    }
+    return groups;
+  }
+
+  function eventPopupHtml(e) {
+    const when = formatWhen(e.time_ms);
+    return `<div class="ei-pop ei-pop-event">
+      <p class="ei-pop-k">${esc(t("place"))}</p>
+      <p class="ei-pop-place">${esc(e.place || "—")}</p>
+      <p class="ei-pop-title">${esc(e.title || e.id)}</p>
+      <p class="ei-pop-meta"><span>${esc(catLabel(e.category))}</span> · ${esc(when.rel || when.abs)}${e.magnitude != null ? ` · ${esc(t("mag", { n: e.magnitude }))}` : ""}</p>
+    </div>`;
+  }
+
+  function openEventPopup(e) {
+    if (!state.map || !window.L || !e) return;
+    L.popup({ className: "ei-popup", closeButton: true, maxWidth: 280, autoPan: true })
+      .setLatLng([e.lat, e.lon])
+      .setContent(eventPopupHtml(e))
+      .openOn(state.map);
+  }
+
+  function openClusterPopup(g) {
     if (!state.map || !window.L) return;
+    const rows = g.items.map((e) => {
+      const when = formatWhen(e.time_ms);
+      return `<button type="button" class="ei-pop-row" data-eid="${esc(e.id)}">
+        <i style="background:${catHex(e.category)}"></i>
+        <span>
+          <b>${esc(e.title || e.id)}</b>
+          <em class="ei-pop-where">${esc(e.place || "—")}</em>
+        </span>
+        <em>${esc(when.rel || when.abs)}</em>
+      </button>`;
+    }).join("");
+    const html = `<div class="ei-pop">
+      <p class="ei-pop-h">${esc(t("cluster", { n: String(g.items.length) }))}</p>
+      ${rows}
+    </div>`;
+    L.popup({ className: "ei-popup", closeButton: true, maxWidth: 300, autoPan: true })
+      .setLatLng([g.lat, g.lon])
+      .setContent(html)
+      .openOn(state.map);
+  }
+
+  function updateMapLayers(opts) {
+    if (!state.map || !window.L) return;
+    const fit = !!(opts && opts.fit);
     const { items, arcs } = layerData();
     const sel = state.selected;
     if (!state.arcLayer) state.arcLayer = L.layerGroup().addTo(state.map);
@@ -646,31 +734,53 @@
       const latlngs = greatCircle([e.lon2, e.lat2], [e.lon, e.lat]).map((p) => [p[1], p[0]]);
       L.polyline(latlngs, {
         color: catHex(e.category),
-        weight: 1.6,
-        opacity: 0.7,
+        weight: 1.8,
+        opacity: 0.75,
         interactive: false
       }).addTo(state.arcLayer);
     }
-    for (const e of items) {
-      const hex = catHex(e.category);
-      const on = e.id === sel;
-      L.circleMarker([e.lat, e.lon], {
-        radius: on ? 16 : 11,
-        color: hex,
-        weight: 0,
-        fillColor: hex,
-        fillOpacity: on ? 0.32 : 0.22,
-        interactive: false
-      }).addTo(state.dotLayer);
-      const mark = L.circleMarker([e.lat, e.lon], {
-        radius: on ? 7.5 : 5.2,
-        color: "#fff",
-        weight: 1.2,
-        fillColor: hex,
-        fillOpacity: 1
-      });
-      mark.on("click", () => select(e.id, { fly: false }));
-      mark.addTo(state.dotLayer);
+    for (const g of clusterEvents(items)) {
+      const head = g.items[0];
+      const hex = catHex(head.category);
+      const on = g.items.some((e) => e.id === sel);
+      if (g.items.length === 1) {
+        L.circleMarker([g.lat, g.lon], {
+          radius: on ? 18 : 13,
+          color: hex,
+          weight: 0,
+          fillColor: hex,
+          fillOpacity: on ? 0.38 : 0.26,
+          interactive: false
+        }).addTo(state.dotLayer);
+        const mark = L.circleMarker([g.lat, g.lon], {
+          radius: on ? 8 : 5.6,
+          color: "#fff",
+          weight: 1.3,
+          fillColor: hex,
+          fillOpacity: 1
+        });
+        mark.on("click", () => { select(head.id, { fly: false }); openEventPopup(head); });
+        mark.addTo(state.dotLayer);
+      } else {
+        const icon = L.divIcon({
+          className: "ei-cluster" + (on ? " is-on" : ""),
+          html: `<span class="ei-cluster-core" style="--ei-cat:${hex}">${g.items.length}</span>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        const mark = L.marker([g.lat, g.lon], { icon, keyboard: true, riseOnHover: true });
+        mark.on("click", () => {
+          select(head.id, { fly: false });
+          openClusterPopup(g);
+        });
+        mark.addTo(state.dotLayer);
+      }
+    }
+    paintLegend();
+    if ((fit || !state.didFit) && items.length) {
+      const b = L.latLngBounds(items.map((e) => [e.lat, e.lon]));
+      state.map.fitBounds(b, { animate: false, maxZoom: 3.5, padding: [28, 28] });
+      state.didFit = true;
     }
   }
 
@@ -703,15 +813,28 @@
     const container = document.getElementById("ei-map");
     if (!container || state.map || !window.L) return;
     const map = L.map(container, {
-      center: [24, 20],
-      zoom: 3,
+      center: [12, 20],
+      zoom: 2.4,
       minZoom: 2,
       maxZoom: 6,
       maxBounds: [[-48, -179.5], [82, 179.5]],
       maxBoundsViscosity: 0.85,
       attributionControl: false,
-      zoomControl: true,
+      zoomControl: false,
       worldCopyJump: false
+    });
+    L.control.zoom({ position: "topright" }).addTo(map);
+    map.on("popupopen", (ev) => {
+      const root = ev.popup.getElement();
+      if (!root) return;
+      root.querySelectorAll("[data-eid]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-eid");
+          const ev = visibleEvents().find((x) => x.id === id);
+          select(id, { fly: false });
+          if (ev) openEventPopup(ev);
+        });
+      });
     });
     const world = L.latLngBounds([[-85.05112878, -180], [85.05112878, 180]]);
     L.imageOverlay(new URL(BASEMAP_URL, document.baseURI).href, world, {
@@ -724,7 +847,7 @@
     requestAnimationFrame(bumpMap);
     setTimeout(bumpMap, 80);
     setTimeout(bumpMap, 300);
-    updateMapLayers();
+    updateMapLayers({ fit: true });
     window.addEventListener("resize", () => {
       if (state.active) bumpMap();
     });
