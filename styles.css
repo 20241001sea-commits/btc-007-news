@@ -2679,9 +2679,16 @@ body[data-ei="1"] .feed-view {
   background-position: center 28%;
   background-repeat: no-repeat;
 }
-.ei-map .maplibregl-canvas { display: block; }
-.ei-map .maplibregl-canvas-container,
-.ei-map .maplibregl-canvas { background: transparent; }
+.ei-map.leaflet-container {
+  background: #02060c;
+  font: inherit;
+}
+.ei-map .leaflet-image-layer { pointer-events: none; }
+.ei-map .leaflet-control-zoom a {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--line);
+}
 .ei-map-attr {
   position: absolute;
   left: 8px;

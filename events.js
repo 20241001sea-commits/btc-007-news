@@ -13,9 +13,8 @@
   const MARKET_MS = 15000;
   const LS_FILTER = "bitxsea-ei-filter";
   const TAPE = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "AVAX", "LINK", "SUI"];
-  const MAPLIBRE_JS = "./assets/vendor/maplibre-gl.js";
-  const MAPLIBRE_CSS = "./assets/vendor/maplibre-gl.css";
-  const DECK_JS = "https://unpkg.com/deck.gl@9.1.14/dist.min.js";
+  const LEAFLET_JS = "./assets/vendor/leaflet.js";
+  const LEAFLET_CSS = "./assets/vendor/leaflet.css";
 
   const CAT_COLOR = {
     seismic: [122, 208, 255],
@@ -357,7 +356,7 @@
   }
 
   function loadCss(href) {
-    if ([...document.querySelectorAll("link[rel=stylesheet]")].some((l) => l.href.includes("maplibre-gl"))) return;
+    if ([...document.querySelectorAll("link[rel=stylesheet]")].some((l) => (l.getAttribute("href") || l.href).includes(href.replace("./", "")))) return;
     const el = document.createElement("link");
     el.rel = "stylesheet";
     el.href = href;
@@ -366,8 +365,9 @@
 
   async function ensureLibs() {
     if (state.libs) return;
-    loadCss(MAPLIBRE_CSS);
-    await loadScript(MAPLIBRE_JS);
+    loadCss(LEAFLET_CSS);
+    await loadScript(LEAFLET_JS);
+    if (!window.L) throw new Error("leaflet missing");
     state.libs = true;
   }
 
@@ -488,8 +488,9 @@
     paintBrief();
     updateMapLayers();
     if (fly && ev && state.map) {
-      const z = Math.max(state.map.getZoom(), 2.6);
-      state.map.easeTo({ center: [ev.lon, ev.lat], zoom: Math.min(z, 5.2), duration: reducedMotion() ? 0 : 600 });
+      const z = Math.min(Math.max(state.map.getZoom(), 3), 5.2);
+      const opts = { duration: reducedMotion() ? 0 : 0.6 };
+      if (state.map.flyTo) state.map.flyTo([ev.lat, ev.lon], z, opts);
     }
   }
 
@@ -624,90 +625,52 @@
     return { items, arcs, quiet };
   }
 
+  function catHex(cat) {
+    const c = CAT_COLOR[cat] || CAT_COLOR.other || [122, 240, 224];
+    return "#" + c.map((n) => n.toString(16).padStart(2, "0")).join("");
+  }
+
+  function bumpMap() {
+    if (state.map && typeof state.map.invalidateSize === "function") state.map.invalidateSize();
+  }
+
   function updateMapLayers() {
-    if (!state.map) return;
-    const { items, arcs, quiet } = layerData();
+    if (!state.map || !window.L) return;
+    const { items, arcs } = layerData();
     const sel = state.selected;
-    if (state.overlay && window.deck) {
-      const ScatterplotLayer = deck.ScatterplotLayer;
-      const ArcLayer = deck.ArcLayer;
-      const halo = new ScatterplotLayer({
-        id: "ei-halo",
-        data: items,
-        getPosition: (d) => [d.lon, d.lat],
-        getFillColor: (d) => {
-          const [r, g, b] = rgb(d.category);
-          return [r, g, b, d.id === sel ? 90 : 50];
-        },
-        getRadius: (d) => radiusOf(d) * 3.2,
-        radiusMinPixels: 10,
-        radiusMaxPixels: 42,
-        radiusUnits: "pixels",
-        pickable: false,
-        parameters: { depthTest: false }
-      });
-      const core = new ScatterplotLayer({
-        id: "ei-core",
-        data: items,
-        getPosition: (d) => [d.lon, d.lat],
-        getFillColor: (d) => {
-          const [r, g, b] = rgb(d.category);
-          return [r, g, b, d.id === sel ? 255 : 230];
-        },
-        getLineColor: [255, 255, 255, 180],
-        lineWidthMinPixels: 0.6,
-        stroked: true,
-        getRadius: (d) => radiusOf(d),
-        radiusMinPixels: 3.5,
-        radiusMaxPixels: 11,
-        radiusUnits: "pixels",
-        pickable: true,
-        autoHighlight: !quiet,
-        onClick: (info) => {
-          if (info && info.object) select(info.object.id, { fly: false });
-        },
-        updateTriggers: { getFillColor: sel, getRadius: sel },
-        parameters: { depthTest: false }
-      });
-      const arc = new ArcLayer({
-        id: "ei-arcs",
-        data: arcs,
-        getSourcePosition: (d) => [d.lon2, d.lat2],
-        getTargetPosition: (d) => [d.lon, d.lat],
-        getSourceColor: (d) => {
-          const [r, g, b] = rgb(d.category);
-          return [r, g, b, 40];
-        },
-        getTargetColor: (d) => {
-          const [r, g, b] = rgb(d.category);
-          return [r, g, b, 140];
-        },
-        getWidth: 1.1,
-        greatCircle: true,
-        pickable: false
-      });
-      state.overlay.setProps({ layers: [arc, halo, core] });
-      return;
-    }
-    if (!state.map.getSource("ei-pts")) return;
-    state.map.getSource("ei-pts").setData({
-      type: "FeatureCollection",
-      features: items.map((e) => ({
-        type: "Feature",
-        properties: { id: e.id, cat: e.category, sel: e.id === sel ? 1 : 0 },
-        geometry: { type: "Point", coordinates: [e.lon, e.lat] }
-      }))
-    });
-    const arcFeats = [];
+    if (!state.arcLayer) state.arcLayer = L.layerGroup().addTo(state.map);
+    if (!state.dotLayer) state.dotLayer = L.layerGroup().addTo(state.map);
+    state.arcLayer.clearLayers();
+    state.dotLayer.clearLayers();
     for (const e of arcs) {
-      arcFeats.push({
-        type: "Feature",
-        properties: { cat: e.category },
-        geometry: { type: "LineString", coordinates: greatCircle([e.lon2, e.lat2], [e.lon, e.lat]) }
-      });
+      const latlngs = greatCircle([e.lon2, e.lat2], [e.lon, e.lat]).map((p) => [p[1], p[0]]);
+      L.polyline(latlngs, {
+        color: catHex(e.category),
+        weight: 1.6,
+        opacity: 0.7,
+        interactive: false
+      }).addTo(state.arcLayer);
     }
-    if (state.map.getSource("ei-arcs")) {
-      state.map.getSource("ei-arcs").setData({ type: "FeatureCollection", features: arcFeats });
+    for (const e of items) {
+      const hex = catHex(e.category);
+      const on = e.id === sel;
+      L.circleMarker([e.lat, e.lon], {
+        radius: on ? 16 : 11,
+        color: hex,
+        weight: 0,
+        fillColor: hex,
+        fillOpacity: on ? 0.32 : 0.22,
+        interactive: false
+      }).addTo(state.dotLayer);
+      const mark = L.circleMarker([e.lat, e.lon], {
+        radius: on ? 7.5 : 5.2,
+        color: "#fff",
+        weight: 1.2,
+        fillColor: hex,
+        fillOpacity: 1
+      });
+      mark.on("click", () => select(e.id, { fly: false }));
+      mark.addTo(state.dotLayer);
     }
   }
 
@@ -738,127 +701,32 @@
 
   async function initMap() {
     const container = document.getElementById("ei-map");
-    if (!container || state.map || !window.maplibregl) return;
-    const style = {
-      version: 8,
-      name: "Night Earth",
-      glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-      sources: {
-        blackmarble: {
-          type: "image",
-          url: new URL(BASEMAP_URL, document.baseURI).href,
-          coordinates: [
-            [-180, 85.05112878],
-            [180, 85.05112878],
-            [180, -85.05112878],
-            [-180, -85.05112878]
-          ]
-        }
-      },
-      layers: [{
-        id: "blackmarble",
-        type: "raster",
-        source: "blackmarble",
-        paint: {
-          "raster-opacity": 1,
-          "raster-contrast": 0.04,
-          "raster-brightness-min": 0.04,
-          "raster-brightness-max": 1,
-          "raster-saturation": 0
-        }
-      }]
-    };
-    const map = new maplibregl.Map({
-      container,
-      style,
-      center: [20, 24],
-      zoom: 2.2,
-      minZoom: 1.5,
+    if (!container || state.map || !window.L) return;
+    const map = L.map(container, {
+      center: [24, 20],
+      zoom: 3,
+      minZoom: 2,
       maxZoom: 6,
-      maxBounds: [[-179.5, -48], [179.5, 82]],
-      renderWorldCopies: false,
-      attributionControl: { compact: true },
-      fadeDuration: reducedMotion() ? 0 : 200,
-      pitch: 0,
-      dragRotate: false,
-      pitchWithRotate: false,
-      rollEnabled: false
+      maxBounds: [[-48, -179.5], [82, 179.5]],
+      maxBoundsViscosity: 0.85,
+      attributionControl: false,
+      zoomControl: true,
+      worldCopyJump: false
     });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    map.touchZoomRotate.disableRotation();
+    const world = L.latLngBounds([[-85.05112878, -180], [85.05112878, 180]]);
+    L.imageOverlay(new URL(BASEMAP_URL, document.baseURI).href, world, {
+      opacity: 1,
+      interactive: false,
+      zIndex: 1
+    }).addTo(map);
     state.map = map;
-    const bump = () => { if (state.map) state.map.resize(); };
-    map.on("load", bump);
-    requestAnimationFrame(bump);
-    setTimeout(bump, 80);
-    setTimeout(bump, 300);
-    await map.once("load");
-    bump();
-    if (window.deck && (deck.MapboxOverlay || deck.MapLibreOverlay)) {
-      const Overlay = deck.MapLibreOverlay || deck.MapboxOverlay;
-      state.overlay = new Overlay({ interleaved: false, layers: [] });
-      map.addControl(state.overlay);
-    } else {
-      addFallbackSources(map);
-    }
+    bumpMap();
+    requestAnimationFrame(bumpMap);
+    setTimeout(bumpMap, 80);
+    setTimeout(bumpMap, 300);
     updateMapLayers();
-    map.on("click", (e) => {
-      if (state.overlay) return;
-      const hits = map.queryRenderedFeatures(e.point, { layers: ["ei-core"] });
-      if (hits && hits[0]) select(hits[0].properties.id, { fly: false });
-    });
     window.addEventListener("resize", () => {
-      if (state.active && state.map) state.map.resize();
-    });
-  }
-
-  function addFallbackSources(map) {
-    map.addSource("ei-pts", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-    map.addSource("ei-arcs", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-    map.addLayer({
-      id: "ei-arcs",
-      type: "line",
-      source: "ei-arcs",
-      paint: { "line-color": "#7ad0ff", "line-opacity": 0.62, "line-width": 1.6 }
-    });
-    map.addLayer({
-      id: "ei-halo",
-      type: "circle",
-      source: "ei-pts",
-      paint: {
-        "circle-color": [
-          "match", ["get", "cat"],
-          "seismic", "#7ad0ff",
-          "conflict", "#ff6b6b",
-          "sanction", "#f0c14b",
-          "economy", "#46f0b0",
-          "threat", "#ff9b6e",
-          "#7af0e0"
-        ],
-        "circle-radius": ["case", ["==", ["get", "sel"], 1], 22, 15],
-        "circle-opacity": 0.34,
-        "circle-blur": 0.72
-      }
-    });
-    map.addLayer({
-      id: "ei-core",
-      type: "circle",
-      source: "ei-pts",
-      paint: {
-        "circle-color": [
-          "match", ["get", "cat"],
-          "seismic", "#7ad0ff",
-          "conflict", "#ff6b6b",
-          "sanction", "#f0c14b",
-          "economy", "#46f0b0",
-          "threat", "#ff9b6e",
-          "#7af0e0"
-        ],
-        "circle-radius": ["case", ["==", ["get", "sel"], 1], 7.5, 5.2],
-        "circle-stroke-color": "rgba(255,255,255,0.9)",
-        "circle-stroke-width": 1.1,
-        "circle-opacity": 1
-      }
+      if (state.active) bumpMap();
     });
   }
 
@@ -993,8 +861,8 @@
       await ensureLibs();
       await initMap();
       if (state.map) {
-        state.map.resize();
-        requestAnimationFrame(() => state.map && state.map.resize());
+        bumpMap();
+        requestAnimationFrame(() => state.map && bumpMap());
         updateMapLayers();
       }
     } catch (err) {
@@ -1010,7 +878,7 @@
     setActive(on) {
       const next = !!on;
       if (next === state.active) {
-        if (next && state.map) state.map.resize();
+        if (next && state.map) bumpMap();
         return;
       }
       state.active = next;
@@ -1020,7 +888,7 @@
     rerender() {
       if (!state.active) return;
       paintAll();
-      if (state.map) state.map.resize();
+      if (state.map) bumpMap();
     }
   };
   prefetchFeed();
