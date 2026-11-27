@@ -1108,7 +1108,11 @@
     }
     const notableHtml = notable.map((e) => {
       const when = formatWhen(e.time_ms);
-      const inner = `${esc(displayPlace(e) || "—")} — ${esc(displayTitle(e) || e.id)} <span class="ei-brief-src">· ${esc(e.source_name || e.source || "")} · ${esc(when.rel || when.abs)}</span>`;
+      const place = displayPlace(e) || "—";
+      let headline = displayTitle(e) || e.id || "";
+      const prefix = place + " · ";
+      if (place !== "—" && headline.startsWith(prefix)) headline = headline.slice(prefix.length);
+      const inner = `${esc(place)} — ${esc(headline)} <span class="ei-brief-src">· ${esc(e.source_name || e.source || "")} · ${esc(when.rel || when.abs)}</span>`;
       if (e.url && /^https?:/i.test(e.url)) {
         return `<li class="ei-brief-item"><a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">${inner}</a></li>`;
       }
