@@ -798,17 +798,17 @@ html[data-theme="light"] .sponsor-brand {
 
 /* Soft wash for items that arrived after the current view is already showing. */
 .story.is-new,
-.kol-row-main.is-new,
-.kol-order-line.is-new {
+.kol-row-main.is-new {
   animation: row-flash 1.7s ease-out;
 }
 .story.is-new-up,
-.kol-row-main.is-new-up,
-.kol-order-line.is-new-up { animation-name: row-flash-up; }
+.kol-row-main.is-new-up { animation-name: row-flash-up; }
 .story.is-new-down,
-.kol-row-main.is-new-down,
-.kol-order-line.is-new-down { animation-name: row-flash-down; }
-.kol-row-main.is-new .kol-order-line.is-new { animation: none; }
+.kol-row-main.is-new-down { animation-name: row-flash-down; }
+.kol-history-list .kol-order-line,
+.kol-order-line.is-new {
+  animation: none;
+}
 @keyframes row-flash {
   0% { background-color: color-mix(in srgb, var(--accent) 20%, transparent); }
   40% { background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
@@ -1591,8 +1591,7 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
     transition: none !important;
   }
   .story.is-new,
-  .kol-row-main.is-new,
-  .kol-order-line.is-new { animation: none; }
+  .kol-row-main.is-new { animation: none; }
 }
 
 .coin-tag.is-active {

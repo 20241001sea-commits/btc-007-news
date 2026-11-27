@@ -207,11 +207,6 @@
     return x.long ? "is-close-long" : "is-close-short";
   }
   function flashTone(x) { return x && x.long ? "up" : "down"; }
-  function newLineClass(isNew, x) {
-    if (!isNew) return "";
-    const tone = flashTone(x);
-    return " is-new" + (tone ? ` is-new-${tone}` : "");
-  }
   function syncRowFlash(el, s, first, now) {
     const main = el && el.querySelector(".kol-row-main");
     if (!main) return;
@@ -350,16 +345,13 @@
     const box = root();
     if (!box) return;
     const now = Date.now();
-    box.querySelectorAll(".kol-order-line.is-new").forEach((row) => {
-      const s = traders.get(row.getAttribute("data-tr"));
-      const until = s && s.newUntil.get(row.getAttribute("data-key"));
-      if (!until || until < now) row.classList.remove("is-new", "is-new-up", "is-new-down");
-    });
     box.querySelectorAll(".kol-row-main.is-new").forEach((main) => {
-      const latest = main.querySelector("[data-tr-latest] .kol-order-line");
-      if (!latest || !latest.classList.contains("is-new")) {
-        main.classList.remove("is-new", "is-new-up", "is-new-down");
-      }
+      const card = main.closest("[data-tr-card]");
+      const addr = card && card.getAttribute("data-tr-card");
+      const stt = addr && traders.get(addr);
+      const first = stt && stt.snap && Array.isArray(stt.snap.orders) ? stt.snap.orders[0] : null;
+      const until = first && stt.newUntil.get(orderKey(first));
+      if (!until || until < now) main.classList.remove("is-new", "is-new-up", "is-new-down");
     });
   }
 
@@ -368,7 +360,7 @@
     const k = orderKey(o);
     const x = actionOf(o);
     const isNew = (s.newUntil.get(k) || 0) > now;
-    return `<div class="kol-order-line${newLineClass(isNew, x)}" data-tr="${esc(s.addr)}" data-key="${esc(k)}">
+    return `<div class="kol-order-line" data-tr="${esc(s.addr)}" data-key="${esc(k)}">
       <div class="kol-latest-meta">
         <span class="kol-time">${esc(fmtStamp(o.t))}</span>
         <span class="kol-side ${sideClass(x)}">${esc(t(x.a))}</span>

@@ -320,11 +320,6 @@
     if (a === "open_long" || a === "close_long" || a === "buy") return "up";
     return "";
   }
-  function newLineClass(isNew, a) {
-    if (!isNew) return "";
-    const tone = flashTone(a);
-    return " is-new" + (tone ? ` is-new-${tone}` : "");
-  }
   function syncRowFlash(el, s, first, now) {
     const main = el && el.querySelector(".kol-row-main");
     if (!main) return;
@@ -374,7 +369,7 @@
     const k = orderKey(o);
     const a = actionOf(o);
     const isNew = (s.newUntil.get(k) || 0) > now;
-    return `<div class="kol-order-line${newLineClass(isNew, a)}" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
+    return `<div class="kol-order-line" data-kol="${esc(s.cfg.key)}" data-key="${esc(k)}">
       <div class="kol-latest-meta">
         <span class="kol-time">${esc(fmtStamp(o.orderTime))}</span>
         <span class="kol-side ${sideClass(a)}">${esc(t(a))}</span>
@@ -559,17 +554,13 @@
     const box = root();
     if (!box) return;
     const now = Date.now();
-    box.querySelectorAll(".kol-order-line.is-new").forEach((row) => {
-      const key = row.getAttribute("data-kol");
-      const s = key && st(key);
-      const until = s && s.newUntil.get(row.getAttribute("data-key"));
-      if (!until || until < now) row.classList.remove("is-new", "is-new-up", "is-new-down");
-    });
     box.querySelectorAll(".kol-row-main.is-new").forEach((main) => {
-      const latest = main.querySelector("[data-kol-latest] .kol-order-line");
-      if (!latest || !latest.classList.contains("is-new")) {
-        main.classList.remove("is-new", "is-new-up", "is-new-down");
-      }
+      const card = main.closest("[data-kol-card]");
+      const key = card && card.getAttribute("data-kol-card");
+      const stt = key && st(key);
+      const first = stt && stt.orders[0];
+      const until = first && stt.newUntil.get(orderKey(first));
+      if (!until || until < now) main.classList.remove("is-new", "is-new-up", "is-new-down");
     });
   }
 
