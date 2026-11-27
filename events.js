@@ -8,13 +8,13 @@
   const CHANNEL = "event-intelligence";
   const FEED_URL = "./.herenow/data/event_feed?limit=8";
   const MARKET_API = "https://eqn.news/api/v1/market";
-  const BASEMAP_URL = "./assets/earth-night/black-marble-2016-z5.jpg";
+  const BASEMAP_URL = "./assets/earth-night/black-marble-2016.jpg";
   const POLL_MS = 30000;
   const MARKET_MS = 15000;
   const LS_FILTER = "bitxsea-ei-filter";
   const TAPE = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "AVAX", "LINK", "SUI"];
-  const MAPLIBRE_JS = "https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js";
-  const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css";
+  const MAPLIBRE_JS = "./assets/vendor/maplibre-gl.js";
+  const MAPLIBRE_CSS = "./assets/vendor/maplibre-gl.css";
   const DECK_JS = "https://unpkg.com/deck.gl@9.1.14/dist.min.js";
 
   const CAT_COLOR = {
@@ -766,10 +766,10 @@
         source: "blackmarble",
         paint: {
           "raster-opacity": 1,
-          "raster-contrast": 0.18,
-          "raster-brightness-min": 0,
-          "raster-brightness-max": 0.92,
-          "raster-saturation": -0.08
+          "raster-contrast": 0.04,
+          "raster-brightness-min": 0.04,
+          "raster-brightness-max": 1,
+          "raster-saturation": 0
         }
       }]
     };
@@ -790,7 +790,13 @@
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.touchZoomRotate.disableRotation();
     state.map = map;
+    const bump = () => { if (state.map) state.map.resize(); };
+    map.on("load", bump);
+    requestAnimationFrame(bump);
+    setTimeout(bump, 80);
+    setTimeout(bump, 300);
     await map.once("load");
+    bump();
     if (window.deck && (deck.MapboxOverlay || deck.MapLibreOverlay)) {
       const Overlay = deck.MapLibreOverlay || deck.MapboxOverlay;
       state.overlay = new Overlay({ interleaved: false, layers: [] });
@@ -968,6 +974,7 @@
       await initMap();
       if (state.map) {
         state.map.resize();
+        requestAnimationFrame(() => state.map && state.map.resize());
         updateMapLayers();
       }
     } catch (err) {
