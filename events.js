@@ -368,11 +368,6 @@
     if (state.libs) return;
     loadCss(MAPLIBRE_CSS);
     await loadScript(MAPLIBRE_JS);
-    try {
-      await loadScript(DECK_JS);
-    } catch (err) {
-      console.warn("deck.gl failed to load, using MapLibre layers only", err);
-    }
     state.libs = true;
   }
 
@@ -561,7 +556,7 @@
     if (!ul) return;
     const items = visibleEvents().slice(0, 8);
     if (!items.length) {
-      ul.innerHTML = `<li class="ei-empty">${esc(t("brief_empty"))}</li>`;
+      ul.innerHTML = `<li class="ei-empty">${esc(state.events.length ? t("brief_empty") : (state.status === "error" ? t("error") : t("loading")))}</li>`;
       return;
     }
     ul.innerHTML = items.map((e) => {
@@ -776,10 +771,12 @@
     const map = new maplibregl.Map({
       container,
       style,
-      center: [32, 18],
-      zoom: 1.45,
-      minZoom: 0.7,
+      center: [20, 24],
+      zoom: 2.2,
+      minZoom: 1.5,
       maxZoom: 6,
+      maxBounds: [[-179.5, -48], [179.5, 82]],
+      renderWorldCopies: false,
       attributionControl: { compact: true },
       fadeDuration: reducedMotion() ? 0 : 200,
       pitch: 0,
@@ -822,7 +819,7 @@
       id: "ei-arcs",
       type: "line",
       source: "ei-arcs",
-      paint: { "line-color": "#7ad0ff", "line-opacity": 0.35, "line-width": 1.1 }
+      paint: { "line-color": "#7ad0ff", "line-opacity": 0.62, "line-width": 1.6 }
     });
     map.addLayer({
       id: "ei-halo",
@@ -838,9 +835,9 @@
           "threat", "#ff9b6e",
           "#7af0e0"
         ],
-        "circle-radius": ["case", ["==", ["get", "sel"], 1], 16, 11],
-        "circle-opacity": 0.22,
-        "circle-blur": 0.75
+        "circle-radius": ["case", ["==", ["get", "sel"], 1], 22, 15],
+        "circle-opacity": 0.34,
+        "circle-blur": 0.72
       }
     });
     map.addLayer({
@@ -857,10 +854,10 @@
           "threat", "#ff9b6e",
           "#7af0e0"
         ],
-        "circle-radius": ["case", ["==", ["get", "sel"], 1], 6.5, 4.2],
-        "circle-stroke-color": "rgba(255,255,255,0.75)",
-        "circle-stroke-width": 0.8,
-        "circle-opacity": 0.95
+        "circle-radius": ["case", ["==", ["get", "sel"], 1], 7.5, 5.2],
+        "circle-stroke-color": "rgba(255,255,255,0.9)",
+        "circle-stroke-width": 1.1,
+        "circle-opacity": 1
       }
     });
   }
@@ -906,22 +903,41 @@
     return { events, checked_ms: checked || Number(snap.checked_ms) || 0 };
   }
 
+  function applyFeedPayload(payload) {
+    const data = parseFeed(payload);
+    state.events = data.events;
+    state.checked_ms = data.checked_ms;
+    state.status = data.events.length ? "live" : "empty";
+    if (state.selected && !visibleEvents().some((e) => e.id === state.selected)) state.selected = null;
+    if (state.built) paintAll();
+  }
+
+  let feedInflight = null;
+  function prefetchFeed() {
+    if (feedInflight) return feedInflight;
+    feedInflight = fetch(FEED_URL, { cache: "no-cache" })
+      .then((res) => {
+        if (!res.ok) throw new Error("http " + res.status);
+        return res.json();
+      })
+      .then((payload) => {
+        applyFeedPayload(payload);
+        return payload;
+      })
+      .catch((err) => {
+        if (!state.events.length) {
+          state.status = "error";
+          if (state.built) paintChrome();
+        }
+        console.warn("event-intelligence feed", err);
+      })
+      .finally(() => { feedInflight = null; });
+    return feedInflight;
+  }
+
   async function pollFeed() {
     if (!state.active) return;
-    try {
-      const res = await fetch(FEED_URL, { cache: "no-cache" });
-      if (!res.ok) throw new Error("http " + res.status);
-      const data = await parseFeed(await res.json());
-      state.events = data.events;
-      state.checked_ms = data.checked_ms;
-      state.status = data.events.length ? "live" : "empty";
-      if (state.selected && !visibleEvents().some((e) => e.id === state.selected)) state.selected = null;
-      paintAll();
-    } catch (err) {
-      state.status = "error";
-      paintChrome();
-      console.warn("event-intelligence feed", err);
-    }
+    await prefetchFeed();
   }
 
   async function pollMarkets() {
@@ -969,6 +985,10 @@
   async function activate() {
     if (!state.built) buildShell();
     paintChrome();
+    paintList();
+    paintBrief();
+    paintMarkets();
+    startTimers();
     try {
       await ensureLibs();
       await initMap();
@@ -979,10 +999,7 @@
       }
     } catch (err) {
       console.error("event-intelligence map", err);
-      const map = document.getElementById("ei-map");
-      if (map && !state.map) map.innerHTML = `<p class="ei-empty">${esc(t("error"))}</p>`;
     }
-    startTimers();
   }
 
   function deactivate() {
@@ -1006,4 +1023,5 @@
       if (state.map) state.map.resize();
     }
   };
+  prefetchFeed();
 })();

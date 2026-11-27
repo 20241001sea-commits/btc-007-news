@@ -2675,8 +2675,8 @@ body[data-ei="1"] .feed-view {
   inset: 0;
   background-color: #02060c;
   background-image: url("./assets/earth-night/black-marble-2016.jpg");
-  background-size: cover;
-  background-position: center 38%;
+  background-size: 155% auto;
+  background-position: center 28%;
   background-repeat: no-repeat;
 }
 .ei-map .maplibregl-canvas { display: block; }
