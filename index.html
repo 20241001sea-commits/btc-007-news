@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://eqn.news" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap">
-  <link rel="stylesheet" href="./styles.css?v=9a64d498cf">
+  <link rel="stylesheet" href="./styles.css?v=261e7768b7">
 </head>
 <body>
   <a class="skip-link" href="#main" data-i18n="skip">Skip to stories</a>
@@ -170,11 +170,26 @@
         </label>
       </header>
       <div id="markets-stats" class="markets-stats"></div>
+      <section class="fx-panel" id="markets-lattice-block">
+        <div class="fx-panel-head">
+          <h2 class="fx-title" data-i18n="lattice_title">Activity lattice</h2>
+          <p class="fx-note" data-i18n="lattice_hint">Cells light up when a coin’s price ticks.</p>
+        </div>
+        <div id="markets-lattice" class="fx-lattice" role="img" data-i18n-aria="lattice_title"></div>
+      </section>
       <div class="matrix-block" id="markets-matrix-block">
         <div class="matrix-toolbar" id="markets-matrix-tools"></div>
         <div class="matrix-board" id="markets-matrix" role="img" data-i18n-aria="matrix"></div>
         <p class="matrix-legend" id="markets-matrix-legend"></p>
       </div>
+      <section class="fx-panel" id="markets-orb-block">
+        <div class="fx-panel-head">
+          <h2 class="fx-title" data-i18n="orb_title">Market links</h2>
+          <p class="fx-note" data-i18n="orb_meta">Lines connect coins whose on-site price-path sparklines move together (correlation of step changes). Not a forecast.</p>
+        </div>
+        <div id="markets-orb" class="fx-orb" role="img" data-i18n-aria="orb_title"></div>
+        <p class="fx-note fx-count" id="markets-orb-count"></p>
+      </section>
       <div id="markets-table-wrap" class="markets-table-wrap"></div>
     </div>
 
@@ -257,10 +272,11 @@
   <noscript>
     <p class="noscript">BTC-007 News needs JavaScript to load live headlines and market data.</p>
   </noscript>
-  <script src="./i18n.js?v=6eec49715a" defer></script>
-  <script src="./kol.js?v=28eb34912c" defer></script>
-  <script src="./traders.js?v=ee190d2a49" defer></script>
-  <script src="./paper.js?v=9512992acd" defer></script>
-  <script src="./app.js?v=b9c447b534" defer></script>
+  <script src="./i18n.js?v=02cd49b11d" defer></script>
+  <script src="./kol.js?v=7ad1261baa" defer></script>
+  <script src="./traders.js?v=88306af8b1" defer></script>
+  <script src="./paper.js?v=372b114d03" defer></script>
+  <script src="./viz.js?v=500271a969" defer></script>
+  <script src="./app.js?v=13eaf571c7" defer></script>
 </body>
 </html>

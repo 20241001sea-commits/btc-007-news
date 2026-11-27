@@ -1243,6 +1243,126 @@ html[data-theme="light"] .btn-primary { color: #fffdf8; }
 .stat-tile .k { font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); font-weight: 700; }
 .stat-tile .v { font-size: 1.0rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
 
+/* Activity lattice, hero ticks, market-link orb — original, not eqn.news
+   ------------------------------------------------------------------ */
+.fx-panel { margin: 0 0 14px; }
+.fx-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+}
+.fx-title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.fx-note {
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  line-height: 1.45;
+  max-width: 62ch;
+}
+.fx-count { margin-top: 6px; }
+.fx-lattice {
+  --fx-cols: 16;
+  display: grid;
+  grid-template-columns: repeat(var(--fx-cols), minmax(0, 1fr));
+  gap: 3px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg) 70%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 6%, transparent);
+}
+.fx-lattice.is-compact {
+  gap: 2px;
+  padding: 4px;
+  margin: 0 0 10px;
+}
+.fx-cell {
+  aspect-ratio: 1;
+  min-height: 8px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+}
+.fx-cell.is-lit.is-up {
+  animation: fx-cell-up 1.4s ease-out;
+}
+.fx-cell.is-lit.is-down {
+  animation: fx-cell-down 1.4s ease-out;
+}
+.fx-cell.is-lit.is-flat {
+  animation: fx-cell-flat 1.4s ease-out;
+}
+@keyframes fx-cell-up {
+  0% { background: color-mix(in srgb, var(--up) 85%, var(--surface)); box-shadow: 0 0 10px color-mix(in srgb, var(--up) 45%, transparent); }
+  100% { background: color-mix(in srgb, var(--text) 8%, transparent); box-shadow: none; }
+}
+@keyframes fx-cell-down {
+  0% { background: color-mix(in srgb, var(--down) 85%, var(--surface)); box-shadow: 0 0 10px color-mix(in srgb, var(--down) 45%, transparent); }
+  100% { background: color-mix(in srgb, var(--text) 8%, transparent); box-shadow: none; }
+}
+@keyframes fx-cell-flat {
+  0% { background: color-mix(in srgb, var(--accent) 70%, var(--surface)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent); }
+  100% { background: color-mix(in srgb, var(--text) 8%, transparent); box-shadow: none; }
+}
+.stat-tile .v [data-hero] { font-variant-numeric: tabular-nums; }
+.stat-tile .v .hero-up { color: var(--up); }
+.stat-tile .v .hero-down { color: var(--down); }
+.kol-tag [data-hero-pnl].hero-up { color: var(--up); }
+.kol-tag [data-hero-pnl].hero-down { color: var(--down); }
+.fx-orb {
+  position: relative;
+  width: 100%;
+  height: min(360px, 52vw);
+  min-height: 220px;
+  overflow: hidden;
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 48%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%),
+    color-mix(in srgb, var(--bg) 82%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 6%, transparent), 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+.fx-orb canvas { display: block; width: 100%; height: 100%; cursor: default; }
+.fx-orb-tip {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 88%, var(--surface));
+  color: var(--text);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28), inset 0 0 0 1px color-mix(in srgb, var(--text) 10%, transparent);
+  white-space: nowrap;
+  max-width: 90%;
+}
+.fx-orb-tip strong { color: var(--accent); font-weight: 700; margin-right: 4px; }
+@media (max-width: 767px) {
+  .fx-orb { height: 220px; min-height: 200px; }
+  .fx-cell { min-height: 7px; }
+  .fx-lattice { gap: 2px; padding: 5px; }
+  .fx-note { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-cell.is-lit.is-up,
+  .fx-cell.is-lit.is-down,
+  .fx-cell.is-lit.is-flat { animation: none; }
+  .fx-cell.is-lit.is-up { background: color-mix(in srgb, var(--up) 55%, var(--surface)); }
+  .fx-cell.is-lit.is-down { background: color-mix(in srgb, var(--down) 55%, var(--surface)); }
+  .fx-cell.is-lit.is-flat { background: color-mix(in srgb, var(--accent) 45%, var(--surface)); }
+}
+
+
 .markets-table-wrap { overflow-x: auto; }
 .markets-table {
   width: 100%;

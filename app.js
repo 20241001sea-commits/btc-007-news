@@ -595,6 +595,7 @@
       btn.classList.toggle("is-active", (nav === "feed" && (isFeed || isArticle)) || (nav === "markets" && isMarkets));
     });
     if (isMarkets) renderMarketsView();
+    if (window.BTC007_VIZ) window.BTC007_VIZ.setMarketsActive(isMarkets);
     syncKol();
     measureChrome();
     if (!isArticle) applyHomeShareMeta();
@@ -1179,7 +1180,8 @@
   }
 
   function applyQuotes(q) {
-    if (!Array.isArray(q)) return;
+    if (!Array.isArray(q)) return [];
+    const changed = [];
     for (const row of q) {
       const [id, p, c1, c24, c7] = row;
       const rec = state.market.byId.get(id);
@@ -1189,8 +1191,12 @@
         rec.c1 = c1;
         rec.c24 = c24;
         rec.c7 = c7;
+        if (rec._prev != null && rec._prev !== rec.p) {
+          changed.push({ s: rec.s, dir: rec.p > rec._prev ? "up" : "down" });
+        }
       }
     }
+    return changed;
   }
 
   function applyExtras(x) {
@@ -1208,7 +1214,7 @@
     if (!msg || typeof msg !== "object") return;
     const type = msg.type;
     if (type === "hello" || type === "tick") {
-      applyQuotes(msg.q);
+      const changed = applyQuotes(msg.q);
       applyExtras(msg.x);
       if (msg.t) state.market.t = msg.t;
       if (msg.v != null) state.market.v = msg.v;
@@ -1217,14 +1223,17 @@
       if (state.view === "markets") {
         updateMarketsPrices();
         refreshMatrix($("markets-matrix"));
+        updateMarketsHero();
       }
       updateCoinDetailQuotes();
+      if (window.BTC007_VIZ) window.BTC007_VIZ.onQuotes(changed);
     } else if (type === "part") {
       if (msg.g) state.market.g = msg.g;
       if (msg.liq) state.market.liq = msg.liq;
       if (msg.fng) state.market.fng = msg.fng;
       renderGlobals();
       renderFng();
+      if (state.view === "markets") updateMarketsHero();
     } else if (type === "universe") {
       fetchMarketSnapshot();
     }
@@ -2208,18 +2217,59 @@
     document.addEventListener("scroll", syncMatrixTip, true);
   }
 
-  function renderMarketsView() {
+  function marketUniverse(top) {
+    return [...state.market.byId.values()]
+      .filter((r) => r && r.s && marketCapOf(r) > 0)
+      .sort((a, b) => marketCapOf(b) - marketCapOf(a) || (a.r || 9999) - (b.r || 9999))
+      .slice(0, top);
+  }
+
+  function updateMarketsHero() {
     const stats = $("markets-stats");
     const g = state.market.g;
     const f = latestFng();
-    const tiles = [];
-    if (g) {
-      tiles.push(`<div class="stat-tile"><div class="k">${esc(t("total_mcap"))}</div><div class="v ${pctClass(g.mcChg)}">${esc(compactUsd(g.mc))} ${g.mcChg != null ? esc(formatPct(g.mcChg)) : ""}</div></div>`);
-      tiles.push(`<div class="stat-tile"><div class="k">${esc(t("total_vol"))}</div><div class="v">${esc(compactUsd(g.vol))}</div></div>`);
-      tiles.push(`<div class="stat-tile"><div class="k">${esc(t("dominance"))}</div><div class="v">${esc(g.btcD != null ? g.btcD + "%" : "—")}</div></div>`);
+    if (!stats) return;
+    if (!stats.dataset.ready) {
+      const tiles = [];
+      tiles.push(`<div class="stat-tile is-hero"><div class="k">${esc(t("total_mcap"))}</div><div class="v ${g && g.mcChg != null ? pctClass(g.mcChg) : ""}"><span data-hero="mcap">${g ? esc(compactUsd(g.mc)) : "—"}</span> <span data-hero-chg>${g && g.mcChg != null ? esc(formatPct(g.mcChg)) : ""}</span></div></div>`);
+      tiles.push(`<div class="stat-tile"><div class="k">${esc(t("total_vol"))}</div><div class="v" data-hero-vol>${g ? esc(compactUsd(g.vol)) : "—"}</div></div>`);
+      tiles.push(`<div class="stat-tile"><div class="k">${esc(t("dominance"))}</div><div class="v" data-hero-btc>${g && g.btcD != null ? esc(g.btcD + "%") : "—"}</div></div>`);
+      tiles.push(`<div class="stat-tile"><div class="k">${esc(t("fear_greed"))}</div><div class="v" data-hero-fng>${f ? `${esc(f.score)} · ${esc(fngLabel(f.label))}` : "—"}</div></div>`);
+      stats.innerHTML = tiles.join("");
+      stats.dataset.ready = "1";
+      if (g && g.mc != null && window.BTC007_VIZ) {
+        window.BTC007_VIZ.playHero(stats.querySelector("[data-hero=mcap]"), g.mc, { key: "mcap", format: compactUsd, dirClass: true });
+      }
+      return;
     }
-    if (f) tiles.push(`<div class="stat-tile"><div class="k">${esc(t("fear_greed"))}</div><div class="v">${esc(f.score)} · ${esc(fngLabel(f.label))}</div></div>`);
-    stats.innerHTML = tiles.join("");
+    stats.querySelector(".is-hero .k").textContent = t("total_mcap");
+    const volK = stats.querySelectorAll(".stat-tile .k")[1];
+    const domK = stats.querySelectorAll(".stat-tile .k")[2];
+    const fngK = stats.querySelectorAll(".stat-tile .k")[3];
+    if (volK) volK.textContent = t("total_vol");
+    if (domK) domK.textContent = t("dominance");
+    if (fngK) fngK.textContent = t("fear_greed");
+    const vEl = stats.querySelector(".is-hero .v");
+    if (g && vEl) vEl.className = "v " + (g.mcChg != null ? pctClass(g.mcChg) : "");
+    const chg = stats.querySelector("[data-hero-chg]");
+    if (chg) chg.textContent = g && g.mcChg != null ? formatPct(g.mcChg) : "";
+    const vol = stats.querySelector("[data-hero-vol]");
+    if (vol) vol.textContent = g ? compactUsd(g.vol) : "—";
+    const btc = stats.querySelector("[data-hero-btc]");
+    if (btc) btc.textContent = g && g.btcD != null ? g.btcD + "%" : "—";
+    const fng = stats.querySelector("[data-hero-fng]");
+    if (fng) fng.textContent = f ? `${f.score} · ${fngLabel(f.label)}` : "—";
+    if (g && g.mc != null && window.BTC007_VIZ) {
+      window.BTC007_VIZ.playHero(stats.querySelector("[data-hero=mcap]"), g.mc, { key: "mcap", format: compactUsd, dirClass: true });
+    } else {
+      const mcap = stats.querySelector("[data-hero=mcap]");
+      if (mcap) mcap.textContent = g ? compactUsd(g.mc) : "—";
+    }
+  }
+
+  function renderMarketsView() {
+    updateMarketsHero();
+    if (window.BTC007_VIZ) window.BTC007_VIZ.onMarketsView();
 
     const rows = marketRowsFiltered();
     const wrap = $("markets-table-wrap");
@@ -2735,10 +2785,15 @@
     esc,
     locale,
     formatPrice,
+    formatPct,
+    compactUsd,
     viewerTimeZone,
     zoneLabel,
     safeHttpUrl,
-    lang: () => state.lang
+    lang: () => state.lang,
+    openCoinDetail,
+    coinOf: (sym) => state.market.bySym.get(sym),
+    topCoins: (n) => marketUniverse(n || 40)
   };
 
   function init() {

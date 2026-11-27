@@ -261,7 +261,14 @@
       const k = orderKey(o);
       if (!s.seen.has(k)) {
         s.seen.add(k);
-        if (!s.first && (o.t || 0) > now - 120000) s.newUntil.set(k, now + NEW_MS);
+        if (!s.first && (o.t || 0) > now - 120000) {
+          s.newUntil.set(k, now + NEW_MS);
+          if (window.BTC007_VIZ) {
+            const lat = root() && root().querySelector("[data-lattice=paper]");
+            const dir = actionOf(o).long ? "up" : "down";
+            if (lat) window.BTC007_VIZ.hitLattice(lat, s.addr, dir);
+          }
+        }
       }
     }
     s.first = false;
@@ -376,7 +383,7 @@
     const nm = label ? `${esc(label)}` : `<span class="tr-addr">${esc(short(sn.addr))}</span>`;
     const pnl = sn.acct && sn.acct.pnlWindow;
     return `<span class="kol-avatar" data-initial="${esc(sn.rank)}"><span class="kol-avatar-fallback" aria-hidden="true">${esc(sn.rank)}</span></span>
-      <span class="kol-name"><span class="kol-name-text">${nm}${label ? ` <span class="tr-addr">${esc(short(sn.addr))}</span>` : ""}</span><span class="kol-tag ${pnlClass(pnl)}">${esc(t("pinned_pnl"))} ${esc(signed(pnl, true))}</span></span>`;
+      <span class="kol-name"><span class="kol-name-text">${nm}${label ? ` <span class="tr-addr">${esc(short(sn.addr))}</span>` : ""}</span><span class="kol-tag ${pnlClass(pnl)}">${esc(t("pinned_pnl"))} <span data-hero-pnl="${esc(s.addr)}">${esc(signed(pnl, true))}</span></span></span>`;
   }
   function posHtml(sn) {
     const rows = sn.positions;
@@ -460,6 +467,11 @@
       if (!el) continue;
       if (s.dirty || s.lang !== lang() || s.tz !== tz()) {
         el.querySelector("[data-tr-head]").innerHTML = headHtml(s);
+        if (window.BTC007_VIZ) {
+          const num = s.snap && s.snap.acct ? s.snap.acct.pnlWindow : null;
+          const hero = el.querySelector("[data-hero-pnl]");
+          if (hero && num != null) window.BTC007_VIZ.playHero(hero, num, { key: "pnl:" + s.addr, format: (v) => signed(v, true), dirClass: true });
+        }
         el.querySelector("[data-tr-latest]").innerHTML = latestHtml(s);
         const det = el.querySelector("[data-tr-detail]");
         const wasOpen = det.querySelector("details.kol-history[open]") != null;
@@ -471,6 +483,8 @@
       }
       syncExpand(s.addr);
     }
+    const lat = box.querySelector("[data-lattice=paper]");
+    if (lat && window.BTC007_VIZ) window.BTC007_VIZ.ensureLattice(lat, rows.map((s) => s.addr), true);
   }
   function syncExpand(addr) {
     const box = root();
@@ -500,11 +514,18 @@
       </div>
       <p class="kol-zone" data-tr-zone></p>
       <p class="kol-cadence-note">${esc(t("rank_basis"))} · ${esc(t("ws_note"))}</p>
+      <p class="fx-note">${esc((window.BTC007_APP && window.BTC007_APP.t && window.BTC007_APP.t("lattice_orders")) || "")}</p>
+      <div class="fx-lattice is-compact" data-lattice="paper"></div>
       <div class="kol-list" data-tr-list></div>
       <p class="kol-note">${esc(t("note"))}</p>`;
     for (const s of traders.values()) s.dirty = true;
     renderList();
     renderStatus();
+    const lat = box.querySelector("[data-lattice=paper]");
+    if (lat && window.BTC007_VIZ) {
+      window.BTC007_VIZ.ensureLattice(lat, ordered().map((s) => s.addr), true);
+      window.BTC007_VIZ.primeLattice(lat);
+    }
   }
   function onClick(e) {
     if (e.target.closest("a") || e.target.closest("details")) return;
