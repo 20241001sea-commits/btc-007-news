@@ -2708,7 +2708,7 @@ body[data-ei="1"] .ei-view {
   background-size: 155% auto;
   background-position: center 28%;
   background-repeat: no-repeat;
-  filter: brightness(0.6) contrast(1.58) saturate(1.22) hue-rotate(-26deg);
+  filter: brightness(0.78) contrast(1.38) saturate(1.12) hue-rotate(-14deg);
 }
 .ei-map.leaflet-container {
   background: #010309;
@@ -2717,7 +2717,7 @@ body[data-ei="1"] .ei-view {
 }
 .ei-map .leaflet-image-layer {
   pointer-events: none;
-  filter: brightness(0.58) contrast(1.62) saturate(1.28) hue-rotate(-26deg);
+  filter: brightness(0.76) contrast(1.4) saturate(1.15) hue-rotate(-14deg);
 }
 .ei-map .leaflet-control-zoom {
   border: 0;
@@ -2828,21 +2828,21 @@ body[data-ei="1"] .ei-view {
 }
 .ei-orb-bloom {
   inset: 0;
-  background: radial-gradient(circle, color-mix(in srgb, var(--ei-cat) 38%, transparent) 0%, color-mix(in srgb, var(--ei-cat) 10%, transparent) 42%, transparent 72%);
-  opacity: 0.95;
+  background: radial-gradient(circle, color-mix(in srgb, var(--ei-cat) 58%, transparent) 0%, color-mix(in srgb, var(--ei-cat) 18%, transparent) 38%, transparent 70%);
+  opacity: 1;
 }
 .ei-orb-halo {
-  width: calc(var(--ei-r) * 2.6);
-  height: calc(var(--ei-r) * 2.6);
-  background: color-mix(in srgb, var(--ei-cat) 42%, transparent);
-  filter: blur(2px);
-  opacity: 0.9;
+  width: calc(var(--ei-r) * 2.8);
+  height: calc(var(--ei-r) * 2.8);
+  background: color-mix(in srgb, var(--ei-cat) 55%, transparent);
+  filter: blur(1.6px);
+  opacity: 0.95;
 }
 .ei-orb-core {
-  width: calc(var(--ei-r) * 1.25);
-  height: calc(var(--ei-r) * 1.25);
-  min-width: 7px;
-  min-height: 7px;
+  width: calc(var(--ei-r) * 1.35);
+  height: calc(var(--ei-r) * 1.35);
+  min-width: 10px;
+  min-height: 10px;
   background: var(--ei-cat);
   border: 1px solid rgba(255, 255, 255, 0.88);
   box-shadow: 0 0 8px var(--ei-cat);

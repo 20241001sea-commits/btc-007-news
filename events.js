@@ -870,10 +870,10 @@
   }
 
   function orbIcon(e, { count = 1, on = false } = {}) {
-    const r = Math.max(4.2, radiusOf(e) * (on ? 1.18 : 1));
+    const r = Math.max(7.2, radiusOf(e) * (on ? 1.2 : 1) + (count > 1 ? 2.2 : 0));
     const hex = catHex(e.category);
     const clustered = count > 1;
-    const size = Math.round(Math.max(clustered ? 28 : 22, r * 4.2));
+    const size = Math.round(Math.max(clustered ? 36 : 30, r * 4.6));
     const n = clustered ? String(count) : "";
     return L.divIcon({
       className: "ei-orb-icon" + (on ? " is-on" : "") + (clustered ? " is-cluster" : ""),
