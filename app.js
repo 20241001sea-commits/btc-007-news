@@ -1634,7 +1634,8 @@
       const tw = Math.max(0, n.w - gap);
       const th = Math.max(0, n.h - gap);
       const label = `${n.rec.s} ${n.rec.n || ""} · $${formatPrice(n.rec.p)} · ${w} ${formatPct(chg)} · ${compactUsd(marketCapOf(n.rec))}`;
-      return `<button type="button" class="mx-tile" data-coin="${esc(n.rec.s)}" data-dir="${dir}" data-lvl="${lvl}" style="left:${left.toFixed(1)}px;top:${topPx.toFixed(1)}px;width:${tw.toFixed(1)}px;height:${th.toFixed(1)}px" aria-label="${esc(label)}">${matrixTileInner(n.rec, w, tw, th)}</button>`;
+      const px = n.rec.p == null ? "" : String(n.rec.p);
+      return `<button type="button" class="mx-tile" data-coin="${esc(n.rec.s)}" data-dir="${dir}" data-lvl="${lvl}" data-px="${esc(px)}" style="left:${left.toFixed(1)}px;top:${topPx.toFixed(1)}px;width:${tw.toFixed(1)}px;height:${th.toFixed(1)}px" aria-label="${esc(label)}">${matrixTileInner(n.rec, w, tw, th)}</button>`;
     }).join("");
     box._mx = { nodes, top, compact, w, area: state.matrix.area, nativeOnly: state.matrix.nativeOnly };
     syncMatrixTip();
@@ -1654,10 +1655,23 @@
       const chg = matrixChange(rec, w);
       const lvl = matrixLevel(chg, w);
       const dir = lvl === 0 || chg == null ? "flat" : Number(chg) > 0 ? "up" : "down";
+      const px = rec.p == null ? "" : String(rec.p);
+      const prevDir = el.dataset.dir;
+      const prevLvl = el.dataset.lvl;
+      const prevPx = el.dataset.px;
       if (el.dataset.dir !== dir) el.dataset.dir = dir;
       if (el.dataset.lvl !== String(lvl)) el.dataset.lvl = String(lvl);
+      if (el.dataset.px !== px) el.dataset.px = px;
       el.innerHTML = matrixTileInner(rec, w, n.w - gap, n.h - gap);
       el.setAttribute("aria-label", `${rec.s} ${rec.n || ""} · $${formatPrice(rec.p)} · ${w} ${formatPct(chg)} · ${compactUsd(marketCapOf(rec))}`);
+      const changed = (prevPx != null && prevPx !== "" && prevPx !== px) || (prevLvl != null && prevLvl !== String(lvl)) || (prevDir != null && prevDir !== dir);
+      if (changed && !reducedMotion() && dir !== "flat") {
+        const flash = dir === "up" ? "mx-flash-up" : "mx-flash-down";
+        el.classList.remove("mx-flash-up", "mx-flash-down");
+        void el.offsetWidth;
+        el.classList.add(flash);
+        el.addEventListener("animationend", () => el.classList.remove("mx-flash-up", "mx-flash-down"), { once: true });
+      }
     });
   }
 
