@@ -426,15 +426,7 @@
         if (s.seen.has(k)) continue;
         s.seen.add(k);
         s.orders.push(o);
-        if (s.loaded) {
-          s.newUntil.set(k, now + NEW_MS);
-          if (window.BTC007_VIZ) {
-            const lat = root() && root().querySelector("[data-lattice=kol]");
-            const a = actionOf(o);
-            const dir = (a === "open_short" || a === "close_short" || a === "sell") ? "down" : "up";
-            if (lat) window.BTC007_VIZ.hitLattice(lat, s.cfg.key, dir);
-          }
-        }
+        if (s.loaded) s.newUntil.set(k, now + NEW_MS);
         ordersChanged = true;
       }
       s.orders.sort((a, b) => (num(b.orderTime) || 0) - (num(a.orderTime) || 0));
@@ -789,8 +781,6 @@
       </div>
       <p class="kol-zone" data-kol-zone></p>
       <p class="kol-cadence-note">${esc(t("others_cadence"))}</p>
-      <p class="fx-note">${esc((window.BTC007_APP && window.BTC007_APP.t && window.BTC007_APP.t("lattice_orders")) || "")}</p>
-      <div class="fx-lattice is-compact" data-lattice="kol"></div>
       <div class="kol-list" data-kol-grid>
         ${visibleKols().map((c) => `<article class="kol-row${c.pinned ? " is-pinned" : ""}" data-kol-card="${esc(c.key)}">
           <div class="kol-row-main" data-kol-expand="${esc(c.key)}" role="button" tabindex="0" aria-expanded="false" aria-controls="kol-detail-${esc(c.key)}">
@@ -808,11 +798,6 @@
       <p class="kol-note">${esc(t("note"))}</p>`;
     for (const c of visibleKols()) renderKol(c.key);
     renderStatus();
-    const lat = box.querySelector("[data-lattice=kol]");
-    if (lat && window.BTC007_VIZ) {
-      window.BTC007_VIZ.ensureLattice(lat, visibleKols().map((c) => c.key), true);
-      window.BTC007_VIZ.primeLattice(lat);
-    }
   }
 
   function onClick(e) {
